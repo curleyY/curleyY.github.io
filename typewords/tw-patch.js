@@ -2316,6 +2316,72 @@
   }
 
   var __twEntryViewReset = false;
+  /** 不背单词风格：重绘背单词（练习）界面 —— 青绿主题、白卡片、圆润排版 */
+  function injectBBDCStyle() {
+    if (document.getElementById('tw-bbdc-style')) return;
+    var st = document.createElement('style');
+    st.id = 'tw-bbdc-style';
+    st.textContent = [
+      /* —— 设计变量（浅色默认 + 深色适配）—— */
+      'body:has(.practice-word){--bbdc-bg:#ffffff;--bbdc-ink:#2f3e45;--bbdc-sub:#93a7ad;--bbdc-pri:#3d9c99;--bbdc-pri-weak:#e9f5f4;--bbdc-card:#ffffff;--bbdc-shadow:rgba(61,156,153,.12);--bbdc-line:#eef4f3;}',
+      'html[data-theme="dark"] body:has(.practice-word){--bbdc-bg:#101b1a;--bbdc-ink:#dcebe8;--bbdc-sub:#6f8b8a;--bbdc-pri:#4cb3af;--bbdc-pri-weak:#1b2f2d;--bbdc-card:#16231f;--bbdc-shadow:rgba(0,0,0,.45);--bbdc-line:#1e302d;}',
+
+      /* —— 页面底色：干净白卡 —— */
+      'body:has(.practice-word),body:has(.practice-word) .layout.anim,body:has(.practice-word) .main-content{background:var(--bbdc-bg) !important;}',
+
+      /* —— 顶栏 —— */
+      'body:has(.practice-word) .mobile-top-nav{background:var(--bbdc-bg) !important;box-shadow:none !important;border-bottom:1px solid var(--bbdc-line) !important;}',
+      'body:has(.practice-word) .mobile-top-nav .nav-item{color:var(--bbdc-sub) !important;}',
+      'body:has(.practice-word) .mobile-top-nav .nav-item.active,body:has(.practice-word) .mobile-top-nav .nav-item[class*="active"]{color:var(--bbdc-pri) !important;}',
+      'body:has(.practice-word) .nav-toggle{background:var(--bbdc-card) !important;color:var(--bbdc-pri) !important;box-shadow:0 2px 10px var(--bbdc-shadow) !important;}',
+
+      /* —— 音标 + 发音 —— */
+      'body:has(.practice-word) .practice-word .phonetic{color:var(--bbdc-sub) !important;letter-spacing:.5px;}',
+      'body:has(.practice-word) .practice-word .flex.gap-1.mt-10 .icon-wrapper{color:var(--bbdc-pri) !important;}',
+
+      /* —— 单词：圆润无衬线大字 —— */
+      'body:has(.practice-word) .practice-word .word .typing-core .letter{font-family:"PingFang SC","HarmonyOS Sans SC","MiSans","Source Han Sans SC","Microsoft YaHei UI","Microsoft YaHei",system-ui,sans-serif !important;font-weight:700 !important;letter-spacing:1px;}',
+
+      /* —— 功能图标行 —— */
+      'body:has(.practice-word) .practice-word .mt-1.flex.gap-4 .icon-wrapper{color:#6fb5b2 !important;transition:color .15s;}',
+      'body:has(.practice-word) .practice-word .mt-1.flex.gap-4 .icon-wrapper:hover{color:var(--bbdc-pri) !important;}',
+
+      /* —— 操作提示胶囊 —— */
+      'body:has(.practice-word) .practice-word .message.info{background:var(--bbdc-pri-weak) !important;border-radius:999px !important;box-shadow:none !important;}',
+      'body:has(.practice-word) .practice-word .message.info .message-text{color:var(--bbdc-pri) !important;}',
+      'body:has(.practice-word) .practice-word .message.info .message-icon{color:var(--bbdc-pri) !important;}',
+
+      /* —— 词义 —— */
+      'body:has(.practice-word) .practice-word .translate{color:var(--bbdc-ink) !important;}',
+      'body:has(.practice-word) .practice-word .translate .pos{color:var(--bbdc-pri) !important;}',
+
+      /* —— 例句 —— */
+      'body:has(.practice-word) .practice-word .sentence-typing .word-end{color:var(--bbdc-ink) !important;}',
+      'body:has(.practice-word) .practice-word .sentence-typing .word.is-current .word-end{color:var(--bbdc-pri) !important;}',
+      'body:has(.practice-word) .practice-word .sentence-typing .icon-wrapper{color:var(--bbdc-sub) !important;}',
+
+      /* —— 短语 / 近义词标签 —— */
+      'body:has(.practice-word) .practice-word .label{color:var(--bbdc-pri) !important;}',
+
+      /* —— 底栏 —— */
+      'body:has(.practice-word) .footer{background:var(--bbdc-card) !important;border-radius:18px 18px 0 0 !important;box-shadow:0 -8px 30px var(--bbdc-shadow) !important;}',
+      'body:has(.practice-word) .footer .arrow{color:var(--bbdc-pri) !important;}',
+      'body:has(.practice-word) .footer .progress-bar-inner{background-color:var(--bbdc-pri) !important;}',
+      'body:has(.practice-word) .footer .bottom{color:var(--bbdc-ink) !important;}',
+
+      /* —— 词表面板（CET-4 第N组）—— */
+      'body:has(.practice-word) .panel-wrap .panel{background:var(--bbdc-card) !important;border-radius:24px !important;box-shadow:0 18px 60px rgba(0,0,0,.18) !important;}',
+      'body:has(.practice-word) .panel-wrap .panel header .color-main{color:var(--bbdc-ink) !important;}',
+      'body:has(.practice-word) .panel-wrap .common-list-item{background:#f3f7f6 !important;border-radius:14px !important;}',
+      'body:has(.practice-word) .panel-wrap .common-list-item .word{color:var(--bbdc-ink) !important;font-weight:600;}',
+      'body:has(.practice-word) .panel-wrap .common-list-item .phonetic{color:var(--bbdc-sub) !important;}',
+      'body:has(.practice-word) .panel-wrap .common-list-item .volume{color:var(--bbdc-pri) !important;}',
+      'body:has(.practice-word) .panel-wrap .common-list-item.active{background:var(--bbdc-pri-weak) !important;}',
+      'body:has(.practice-word) .panel-wrap .common-list-item.active .word{color:var(--bbdc-pri) !important;}'
+    ].join('\n');
+    (document.head || document.documentElement).appendChild(st);
+  }
+
   function run() {
     hideFeedback();
     patchSettings();
@@ -2342,6 +2408,7 @@
     hideSidebarLogo();
     hideTtsHint();
     injectTestStyle();
+    injectBBDCStyle();
     syncTestMode();
     enhanceOriginalTest();
     patchTestWordsIfEmpty();
