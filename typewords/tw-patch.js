@@ -2184,6 +2184,8 @@
   window.addEventListener('message', function (ev) {
     var d = ev.data;
     if (d && d.type === 'tw-force-view' && (d.mode === 'card' || d.mode === 'real')) {
+      // 宿主切回普通「背单词」时，若炭炭全屏界面还开着，先关掉它
+      try { if (typeof ttClose === 'function') ttClose(); } catch (e) {}
       setBookView(d.mode);
       applyBookView();
       var tg = document.getElementById('tw-rec-view-toggle');
@@ -2192,6 +2194,10 @@
     }
     if (d && d.type === 'tw-open-dict' && d.title) {
       openDictByTitle(d.title);
+    }
+    // 宿主 dock 栏「单词」（炭炭单词）入口：直接打开炭炭全屏界面
+    if (d && d.type === 'tw-open-tantan') {
+      try { ttOpen(); } catch (e) {}
     }
   });
 
