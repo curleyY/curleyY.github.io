@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=auto">
+
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+    <title>AFFiNE</title>
+    <meta name="theme-color" content="#fafafa">
+    
+    <link rel="manifest" href="/manifest.json">
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="icon" sizes="192x192" href="/favicon-192.png">
+    <link rel="shortcut icon" href="/favicon.ico?v=2">
+    <meta name="emotion-insertion-point" content="">
+    <meta property="description" content="There can be more than Notion and Miro. AFFiNE is a next-gen knowledge base that brings planning, sorting and creating all together.">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://app.affine.pro/">
+    <meta name="twitter:title" content="AFFiNE: There can be more than Notion and Miro.">
+    <meta name="twitter:description" content="There can be more than Notion and Miro. AFFiNE is a next-gen knowledge base that brings planning, sorting and creating all together.">
+    <meta name="twitter:site" content="@AffineOfficial">
+    <meta name="twitter:image" content="https://affine.pro/og.jpeg">
+    <meta property="og:title" content="AFFiNE: There can be more than Notion and Miro.">
+    <meta property="og:type" content="website">
+    <meta property="og:description" content="There can be more than Notion and Miro. AFFiNE is a next-gen knowledge base that brings planning, sorting and creating all together.">
+    <meta property="og:url" content="https://app.affine.pro/">
+    <meta property="og:image" content="https://affine.pro/og.jpeg">
+  <meta content="/" name="env:publicPath"><script id="affine-gz-loader">
+(function(){
+  var SCRIPTS=["/js/global-error-handler.js", "/js/runtime.f6819744.js", "/js/npm-rxjs.2a651a07.js", "/js/i18n.eb5bc4b6.js", "/js/i18n-langs.i18n-completenesses.f3193f5f.js", "/js/npm-blocksuite.912c9df9.js", "/js/npm-react.d249c215.js", "/js/npm-jotai.ff53f772.js", "/js/npm-emotion.06ccdb5b.js", "/js/vendor.44009b03.js", "/js/index.446582c3.js"];
+  var STYLES=["/styles.e73ab7b1.css", "/vendor.357700c4.css"];
+  function insertAll(){
+    for(var i=0;i<STYLES.length;i++){
+      var l=document.createElement('link');
+      l.rel='stylesheet';
+      l.href=STYLES[i];
+      document.head.appendChild(l);
+    }
+    for(var j=0;j<SCRIPTS.length;j++){
+      var s=document.createElement('script');
+      s.src=SCRIPTS[j];
+      s.async=false;
+      document.head.appendChild(s);
+    }
+  }
+  var canSW=('serviceWorker' in navigator)&&(typeof DecompressionStream!=='undefined');
+  if(!canSW){insertAll();return;}
+  // 必须等当前页面真正被 SW 控制（controllerchange）再加载资源，
+  // 否则首批请求不会经过 SW，享受不到压缩。
+  var done=false;
+  function finish(){ if(done) return; done=true; try{ navigator.serviceWorker.removeEventListener('controllerchange', onCtrl); }catch(e){} insertAll(); }
+  function onCtrl(){ finish(); }
+  if(navigator.serviceWorker.controller){ finish(); return; }
+  navigator.serviceWorker.addEventListener('controllerchange', onCtrl);
+  navigator.serviceWorker.register('/sw.js').catch(function(){});
+  navigator.serviceWorker.ready.then(function(){
+    setTimeout(finish, 150);
+  }).catch(function(){});
+  setTimeout(finish, 2000);
+})();
+</script></head>
+
+  <body>
+    <div id="app" data-version="bf473eeb6"></div>
+  
+
+</body></html>

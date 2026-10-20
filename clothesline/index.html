@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- 入口页不缓存：避免浏览器拿旧 index.html（旧版引用旧资源，favicon 等新功能不显示） -->
+  <meta http-equiv="Cache-Control" content="no-cache, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <title>文件晾晒墙 · Clothesline File Viewer</title>
+  <link rel="stylesheet" href="./styles.css?v=23" />
+
+  <!-- Open File Viewer 官方样式（预览弹层内的工具栏/内容排版由它提供） -->
+  <link rel="stylesheet" href="./vendor/ofv-style.css?v=23" />
+</head>
+<body>
+  <!-- 夹子共用的渐变定义（隐藏） -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+    <defs>
+      <linearGradient id="pinWhite" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0" stop-color="#ffffff" />
+        <stop offset="0.5" stop-color="#f5f7fa" />
+        <stop offset="1" stop-color="#e3e8ee" />
+      </linearGradient>
+      <linearGradient id="pinMetal" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#eef1f4" />
+        <stop offset="0.5" stop-color="#d3d9e0" />
+        <stop offset="1" stop-color="#b7bfc8" />
+      </linearGradient>
+    </defs>
+  </svg>
+
+  <main class="page">
+    <!-- 晾晒组件挂载点：文件由 JS 里的 files 数组配置 -->
+    <section
+      id="clothesline"
+      class="clothesline"
+      aria-label="文件列表"
+      aria-roledescription="可横向滚动的文件晾晒墙"
+    ></section>
+
+    <!-- 预览弹层（dialog） -->
+    <div id="preview-modal" class="modal" hidden>
+      <div class="modal__backdrop" data-close></div>
+      <!-- 从屏幕顶部垂下来的绳索：预览卡片被它“牵”着 -->
+      <div class="modal__rope" aria-hidden="true"></div>
+      <div
+        class="modal__dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="modal-title"
+      >
+        <!-- 弹层顶部的夹子，把预览卡片夹在绳索上 -->
+        <svg class="pin modal__pin" viewBox="0 0 20 46" aria-hidden="true" focusable="false">
+          <rect x="4" y="2" width="12" height="4.5" rx="2" fill="url(#pinWhite)" />
+          <rect x="5" y="4" width="4.5" height="40" rx="2.25" fill="url(#pinWhite)" />
+          <rect x="10.5" y="4" width="4.5" height="40" rx="2.25" fill="url(#pinWhite)" />
+          <rect x="2.5" y="13" width="15" height="4" rx="2" fill="url(#pinMetal)" />
+          <line x1="10" y1="7" x2="10" y2="43" stroke="#d3d9df" stroke-width="0.7" />
+        </svg>
+        <header class="modal__head">
+          <h2 id="modal-title" class="modal__title">文件预览</h2>
+          <button class="modal__close" type="button" aria-label="关闭预览" data-close>×</button>
+        </header>
+        <div class="modal__body" id="preview-body">
+          <!-- Open File Viewer 会在这里被动态挂载（clothesline.js → viewer.js） -->
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- 右下角动作区：碎纸机（添加文件入口已统一到左下角“加入文件”堆叠卡） -->
+  <div class="corner-stack">
+    <!-- 右下角碎纸机（拖文件卡片到这里即可碎掉） -->
+    <div id="shredder" class="shredder" aria-label="碎纸机：把文件卡片拖到这里即可碎纸" role="button" tabindex="0" title="把文件拖到这里碎掉">
+      <span class="shredder__hint">把文件拖到这里 🗑️</span>
+    </div>
+  </div>
+
+  <!-- 左下角“加入文件”堆叠卡入口：收起时叠放，点击展开出本地/网络/倒数日三个选项 -->
+  <div id="add-stack" class="add-stack" aria-label="加入文件">
+    <button class="add-stack__card add-stack__card--head" type="button" aria-expanded="false">
+      <span class="add-stack__plus" aria-hidden="true">＋</span>
+      <span class="add-stack__label">加入文件</span>
+    </button>
+    <button class="add-stack__card add-stack__card--opt" type="button" data-add-tab="upload">本地文件</button>
+    <button class="add-stack__card add-stack__card--opt" type="button" data-add-tab="url">网络链接</button>
+    <button class="add-stack__card add-stack__card--opt" type="button" data-add-tab="countdown">倒数日</button>
+  </div>
+
+  <!-- 添加文件弹层 -->
+  <div id="add-modal" class="modal add-modal" hidden>
+    <div class="modal__backdrop" data-add-close></div>
+    <div class="modal__dialog add-dialog" role="dialog" aria-modal="true" aria-labelledby="add-title">
+      <header class="modal__head">
+        <h2 id="add-title" class="modal__title">添加文件</h2>
+        <button class="modal__close" type="button" aria-label="关闭" data-add-close>×</button>
+      </header>
+      <div class="modal__body add-body">
+        <div class="add-tabs">
+          <button class="add-tab is-active" type="button" data-tab="upload">本地文件</button>
+          <button class="add-tab" type="button" data-tab="url">网络链接</button>
+          <button class="add-tab" type="button" data-tab="countdown">倒数日</button>
+        </div>
+
+        <!-- 本地文件 -->
+        <div class="add-pane" data-pane="upload">
+          <label class="add-drop" id="add-drop">
+            <input type="file" id="add-file-input" hidden />
+            <span class="add-drop__icon" aria-hidden="true">⬆️</span>
+            <span class="add-drop__text">点击选择文件，或拖拽到此处</span>
+            <span class="add-drop__hint">支持任意类型，添加后可直接预览</span>
+          </label>
+          <div class="add-name">
+            <span id="add-file-name" class="add-file-name"></span>
+          </div>
+        </div>
+
+        <!-- 网络链接 -->
+        <div class="add-pane" data-pane="url" hidden>
+          <label class="add-field">
+            <span>文件链接</span>
+            <input type="url" id="add-url-input" placeholder="https://example.com/file.pdf" />
+          </label>
+          <label class="add-field">
+            <span>文件名（可选，留空则用链接名）</span>
+            <input type="text" id="add-name-input" placeholder="示例文档.pdf" />
+          </label>
+          <label class="add-field">
+            <span>类型（可选，留空则自动识别）</span>
+            <select id="add-type-input">
+              <option value="">自动识别</option>
+              <option value="link">网站链接</option>
+              <option value="pdf">PDF</option>
+              <option value="image">图片</option>
+              <option value="docx">Word</option>
+              <option value="xlsx">Excel</option>
+              <option value="pptx">PPT</option>
+              <option value="video">视频</option>
+              <option value="audio">音频</option>
+              <option value="zip">压缩包</option>
+            </select>
+          </label>
+        </div>
+
+        <!-- 倒数日 -->
+        <div class="add-pane" data-pane="countdown" hidden>
+          <label class="add-field">
+            <span>标题</span>
+            <input type="text" id="cd-title-input" placeholder="高考" maxlength="10" />
+          </label>
+          <label class="add-field">
+            <span>目标日期</span>
+            <input type="date" id="cd-date-input" />
+          </label>
+          <p class="add-field__hint">创建后显示为可自由挪动的倒数日贴纸卡，拖到碎纸机可删除</p>
+        </div>
+
+        <p class="add-err" id="add-err" hidden></p>
+        <div class="add-actions">
+          <button class="add-cancel" type="button" data-add-close>取消</button>
+          <button class="add-confirm" id="add-confirm" type="button">添加</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 版本自检：若浏览器拿着旧版 index.html（引用旧资源），自动刷新一次拿新版。
+    // sessionStorage 防循环：只自动重载一次，之后仍异常则保持现状不打扰用户。
+    (function () {
+      try {
+        var expected = 'v=23';
+        var tag = document.querySelector('script[src*="clothesline.js"]');
+        if (tag && tag.src.indexOf(expected) === -1 && !sessionStorage.getItem('cl-reloaded')) {
+          sessionStorage.setItem('cl-reloaded', '1');
+          location.reload();
+        }
+      } catch (e) {}
+    })();
+  </script>
+  <script src="./shredder.js?v=23"></script>
+  <script type="module" src="./clothesline.js?v=23"></script>
+  <script src="./adddialog.js?v=23"></script>
+  <script src="./countdown.js?v=23"></script>
+</body>
+</html>

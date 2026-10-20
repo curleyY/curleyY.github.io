@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>正在跳转到 TypeWords…</title>
+  <meta http-equiv="refresh" content="0; url=/typewords/">
+  <script>
+    // 直接进入背单词应用，避免 AFFiNE 根目录自动跳转 /workspace/... 深链导致 404
+    try {
+      if (location.pathname === '/' || location.pathname === '') {
+        location.replace('/typewords/');
+      }
+    } catch (e) {}
+  </script>
+</head>
+<body>
+  <p>正在跳转到 <a href="/typewords/">TypeWords 背单词</a> …</p>
+</body>
+</html>
