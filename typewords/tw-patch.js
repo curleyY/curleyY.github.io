@@ -2388,26 +2388,31 @@
     (document.head || document.documentElement).appendChild(st);
   }
 
-  /* ==================== 炭炭背单词（界面复刻） ====================
-   * 侧边栏新增「炭炭单词」按钮 → 打开全屏复刻界面：
-   *  - 列表学习：Day N 单词行流（熟悉度色标 / 点击发音展开 / 左滑熟知 / 右滑标记-1·编辑·生词）
-   *  - 学习计划：艾宾浩斯 Day ×（新学/1天后/2天后/4天后/7天后/15天后）矩阵
-   *  - 模式：听力 / 拼写 / 选择题（本地实现）
-   *  - 词书 / 生词本
-   * 数据：当前词库 JSON（pinia runtime.editDict.url → /typewords/dicts/en/word/*.json）
-   * 状态：localStorage('tw-tantan-v1')
+  /* ==================== 炭炭背单词（界面复刻 v2·对齐官方 5 屏） ====================
+   * 入口：外壳 dock「单词」/ TypeWords 侧栏「炭炭单词」→ 全屏界面：
+   *  - 主界面：序号条 + 单词/音标 + 右侧「点击显示」遮罩释义；底栏 List 徽标 /
+   *            长按查词提示 / 右下角 随身听+学习计划 两按钮
+   *  - 点「Day N ▾」：底部面板（单词显示：中英/遮罩中文/遮罩英文；
+   *            单词排序：原始/字母正序/随机乱序/标记排序；单词训练：随身听/拼写/选择题）
+   *  - 学习计划：在学书籍 + 进度 + 艾宾浩斯矩阵 + PDF 导出（右下角日历按钮进入）
+   *  - 个人中心（左上角 ☰）：头像/学员卡/我的内容/装备解锁/炭币/百宝箱/同步时间
+   *  - 设置（个人中心右上角 ⚙）：发音英/美音、更换词书、同步数据、还原释义等
+   * 数据：当前词库 JSON；状态：localStorage('tw-tantan-v1')
    */
   var TT_KEY = 'tw-tantan-v1';
-  var TT = { st: null, words: null, meta: null, view: 'study', day: 0, expanded: null, drawer: false, searchQ: '' };
+  var TT = { st: null, words: null, meta: null, view: 'study', day: 0, searchQ: '', revealed: {}, sheet: false };
 
   function ttLoad() {
     if (TT.st) return TT.st;
     try { TT.st = JSON.parse(localStorage.getItem(TT_KEY)) || null; } catch (e) { TT.st = null; }
-    if (!TT.st) TT.st = { startDate: 0, perDay: 20, familiar: {}, known: {}, vocab: {}, edits: {}, dictUrl: '', dictName: '' };
+    if (!TT.st) TT.st = { startDate: 0, perDay: 20, familiar: {}, known: {}, vocab: {}, edits: {}, dictUrl: '', dictName: '', dispMode: 'maskCN', sortMode: 'orig', accent: '英', lastSave: 0 };
+    if (!TT.st.dispMode) TT.st.dispMode = 'maskCN';
+    if (!TT.st.sortMode) TT.st.sortMode = 'orig';
+    if (!TT.st.accent) TT.st.accent = '英';
     return TT.st;
   }
   function ttSave() {
-    try { localStorage.setItem(TT_KEY, JSON.stringify(TT.st)); } catch (e) {}
+    try { TT.st.lastSave = Date.now(); localStorage.setItem(TT_KEY, JSON.stringify(TT.st)); } catch (e) {}
   }
   function ttMeta() {
     if (TT.meta) return TT.meta;
@@ -2422,8 +2427,7 @@
     var name = ed.name || st.dictName || 'CET-4';
     var len = ed.length || 0;
     var perDay = ed.perDayStudyNumber || ed.perDay || st.perDay || 20;
-    var lastIdx = ed.lastLearnIndex || 0;
-    TT.meta = { url: url, name: name, len: len, perDay: perDay, lastIdx: lastIdx };
+    TT.meta = { url: url, name: name, len: len, perDay: perDay };
     return TT.meta;
   }
   function ttToday() {
@@ -2436,15 +2440,15 @@
     var n = TT.words ? TT.words.length : (m.len || 2607);
     return Math.max(1, Math.ceil(n / (TT.st.perDay || 20)));
   }
-  function ttDayWords(d) { // d: 1-based
+  function ttDayWords(d) { // d: 1-based → 词库索引数组
     var per = TT.st.perDay || 20;
     var s = (d - 1) * per, e = Math.min(d * per, TT.words.length);
     var list = [];
     for (var i = s; i < e; i++) list.push(i);
-    return list; // 词库索引
+    return list;
   }
   var TT_GAPS = [1, 2, 4, 7, 15];
-  function ttReviewSources(d) { // Day d 要复习哪些此前的 List
+  function ttReviewSources(d) {
     var out = [];
     for (var g = 0; g < TT_GAPS.length; g++) {
       var k = d - TT_GAPS[g];
@@ -2468,15 +2472,11 @@
   function ttSpeak(word) {
     try {
       var u = new SpeechSynthesisUtterance(word);
-      u.lang = 'en-US'; u.rate = 1;
+      u.lang = TT.st.accent === '美' ? 'en-US' : 'en-GB'; u.rate = 1;
       speechSynthesis.cancel(); speechSynthesis.speak(u);
     } catch (e) {}
   }
   function ttFam(word) { return TT.st.familiar[word] || 0; }
-  function ttBadgeColor(n) { // 熟悉度 0-5 → 色阶（读的遍数越多颜色越深）
-    var c = ['#EDF5F4', '#D3ECE9', '#A8DCD7', '#6FC7C0', '#3CB1A9', '#1F9A92'];
-    return c[Math.max(0, Math.min(5, n))];
-  }
   function ttTransOne(w) {
     var t = '';
     if (TT.st.edits[w.word]) return TT.st.edits[w.word];
@@ -2485,74 +2485,145 @@
   }
   function ttIsKnown(w) { return !!TT.st.known[w.word]; }
   function ttIsVocab(w) { return !!TT.st.vocab[w.word]; }
+  function ttIsMarked(w) { return !!TT.st.marked && !!TT.st.marked[w.word]; }
+  function ttSeededShuffle(arr, seed) {
+    function rnd() { seed = (seed * 9301 + 49297) % 233280; return seed / 233280; }
+    var a = arr.slice();
+    for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(rnd() * (i + 1)); var t = a[i]; a[i] = a[j]; a[j] = t; }
+    return a;
+  }
+  function ttSortIdx(list) {
+    var mode = TT.st.sortMode || 'orig';
+    var arr = list.slice();
+    if (mode === 'alpha') arr.sort(function (a, b) { return TT.words[a].word.localeCompare(TT.words[b].word); });
+    else if (mode === 'rand') arr = ttSeededShuffle(arr, (TT.st.startDate || 1) + (TT.day || 1) * 7919 + 13);
+    else if (mode === 'mark') arr.sort(function (a, b) {
+      function sc(i2) { var w2 = TT.words[i2]; return (TT.st.vocab[w2.word] ? 4 : 0) + (TT.st.marked && TT.st.marked[w2.word] ? 2 : 0) + (TT.st.known[w2.word] ? 1 : 0); }
+      return sc(b) - sc(a);
+    });
+    return arr;
+  }
 
   /* ---------- 样式 ---------- */
   function ttEnsureStyle() {
-    if (document.getElementById('tw-tantan-style')) return;
+    if (document.getElementById('tw-ttantan-style')) {
+      var old2 = document.getElementById('tw-tantan-style'); if (old2) old2.remove();
+      return;
+    }
+    var old = document.getElementById('tw-tantan-style'); if (old) old.remove();
+    var st = document.createElement('style'); st.id = 'tw-ttantan-style'; document.head.appendChild(st);
     var css = [
       '#tw-tantan-app{position:fixed;inset:0;z-index:99999;background:#fff;display:none;flex-direction:column;font-family:-apple-system,"PingFang SC","HarmonyOS Sans SC","Microsoft YaHei",sans-serif;color:#333;}',
       '#tw-tantan-app.open{display:flex;}',
       '#tw-tantan-app *{box-sizing:border-box;}',
       /* 顶栏 */
-      '.tt-top{height:56px;display:flex;align-items:center;gap:6px;padding:0 14px;border-bottom:1px solid #F2F4F5;flex-shrink:0;background:#fff;}',
-      '.tt-top .tt-ic{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#5c6b6a;user-select:none;}',
+      '.tt-top{height:56px;display:flex;align-items:center;gap:4px;padding:0 12px;border-bottom:1px solid #F2F4F5;flex-shrink:0;background:#fff;}',
+      '.tt-top .tt-ic{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#5c6b6a;user-select:none;flex-shrink:0;}',
       '.tt-top .tt-ic:hover{background:#F3F7F7;}',
-      '.tt-top .tt-ic svg{width:20px;height:20px;fill:currentColor;}',
-      '.tt-day{flex:1;text-align:center;font-size:19px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px;user-select:none;}',
-      '.tt-day .caret{font-size:11px;color:#9aa8a7;}',
+      '.tt-top .tt-ic svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}',
+      '.tt-top .tt-ic.hide,.tt-top .tt-extra.hide{display:none;}',
+      '.tt-day{flex:1;text-align:center;font-size:19px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:5px;user-select:none;color:#2b3635;}',
+      '.tt-day .caret{font-size:10px;color:#9aa8a7;}',
+      '.tt-day.plain{cursor:default;}',
+      '.tt-extra{flex:1;text-align:right;padding-right:8px;font-size:15px;font-weight:700;color:#3CBFB7;cursor:pointer;user-select:none;}',
       /* 主体 */
       '.tt-body{flex:1;overflow-y:auto;background:#fff;}',
-      '.tt-wrap{max-width:720px;margin:0 auto;padding:10px 16px 90px;}',
+      '.tt-wrap{max-width:760px;margin:0 auto;padding:14px 20px 80px;}',
       /* 分组标题 */
-      '.tt-grp{display:flex;align-items:center;gap:8px;margin:18px 2px 6px;font-size:12.5px;color:#8fa5a3;font-weight:600;}',
+      '.tt-grp{display:flex;align-items:center;gap:8px;margin:16px 2px 8px;font-size:12.5px;color:#8fa5a3;font-weight:600;}',
       '.tt-grp .bar{width:4px;height:14px;border-radius:2px;background:#3CBFB7;}',
-      /* 单词行 */
-      '.tt-row{position:relative;border-radius:14px;overflow:hidden;margin-bottom:6px;background:#fff;}',
+      /* 单词行（官方版：序号条 + 词块 + 遮罩释义区） */
+      '.tt-row{position:relative;border-radius:12px;overflow:hidden;margin-bottom:10px;background:#fff;}',
       '.tt-row.ghost{opacity:.38;}',
       '.tt-row .tt-acts{position:absolute;top:0;bottom:0;display:flex;align-items:stretch;z-index:0;}',
       '.tt-row .tt-acts.r{right:0;}',
       '.tt-row .tt-acts.l{left:0;flex-direction:row-reverse;}',
       '.tt-act{border:none;color:#fff;font-size:13px;font-weight:600;width:76px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;cursor:pointer;font-family:inherit;}',
       '.tt-act svg{width:18px;height:18px;fill:none;stroke:#fff;stroke-width:2;}',
-      '.tt-act.know{background:#3CBFB7;border-radius:0 14px 14px 0;}',
-      '.tt-act.dec{background:#F56C6C;border-radius:14px 0 0 14px;}',
+      '.tt-act.know{background:#3CBFB7;border-radius:0 12px 12px 0;}',
+      '.tt-act.dec{background:#F56C6C;border-radius:12px 0 0 12px;}',
       '.tt-act.edit{background:#6B8CFF;}',
       '.tt-act.vocab{background:#FFA53D;}',
-      '.tt-rowmain{position:relative;z-index:1;background:#fff;border:1px solid #F0F3F3;border-radius:14px;display:flex;align-items:center;gap:12px;padding:13px 14px;cursor:pointer;transition:transform .18s ease;}',
+      '.tt-rowmain{position:relative;z-index:1;background:#fff;display:flex;align-items:stretch;gap:12px;cursor:pointer;transition:transform .18s ease;min-height:64px;}',
       '.tt-row.no-anim .tt-rowmain{transition:none;}',
-      '.tt-rowmain:active{background:#FAFDFD;}',
-      '.tt-badge{width:30px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:12.5px;font-weight:700;color:#57736F;flex-shrink:0;}',
-      '.tt-wc{flex-shrink:0;min-width:34%;}',
+      '.tt-num{width:30px;border-radius:8px;background:#EEF1F2;color:#b3bfbf;display:flex;align-items:center;justify-content:center;font-size:12.5px;font-weight:600;flex-shrink:0;align-self:stretch;}',
+      '.tt-num.hot{background:#F8DADB;color:#DE8F92;}',
+      '.tt-wc{width:36%;min-width:180px;display:flex;flex-direction:column;justify-content:center;flex-shrink:0;}',
       '.tt-word{font-size:17.5px;font-weight:700;color:#2b3635;line-height:1.25;word-break:break-word;}',
       '.tt-word .star{color:#FFA53D;margin-left:5px;font-size:14px;}',
-      '.tt-ph{font-size:12.5px;color:#a3b3b1;margin-top:2px;}',
-      '.tt-trans{flex:1;text-align:right;font-size:13px;color:#7d8f8d;line-height:1.5;max-height:40px;overflow:hidden;}',
-      /* 详情展开 */
-      '.tt-detail{background:#F7FBFA;border-radius:14px;padding:12px 16px;margin:-2px 0 8px;font-size:13.5px;color:#4d5c5a;line-height:1.7;}',
+      '.tt-ph{font-size:12px;color:#a3b3b1;margin-top:3px;}',
+      '.tt-trans{flex:1;background:#EFF2F3;border-radius:12px;display:flex;align-items:center;justify-content:center;color:#b9c4c3;font-size:13px;padding:8px 16px;min-height:64px;}',
+      '.tt-trans.show{background:#F7FAFA;color:#4d5c5a;justify-content:flex-start;line-height:1.55;}',
+      /* 详情展开（长按查词） */
+      '.tt-detail{background:#F7FBFA;border-radius:12px;padding:12px 16px;margin:-4px 0 10px;font-size:13.5px;color:#4d5c5a;line-height:1.7;}',
       '.tt-detail .sec{margin-top:8px;}',
       '.tt-detail .sec:first-child{margin-top:0;}',
       '.tt-detail .lab{font-size:11.5px;color:#93a7a5;font-weight:700;margin-bottom:3px;letter-spacing:.5px;}',
       '.tt-detail .sent b{color:#1F9A92;font-weight:700;}',
       '.tt-detail .cn{color:#8b9b99;font-size:12.5px;}',
       '.tt-detail .chip{display:inline-block;background:#EDF6F5;color:#2E9E97;border-radius:6px;padding:1px 8px;margin:2px 4px 2px 0;font-size:12px;}',
-      /* 计划页 */
-      '.tt-plan-head{padding:18px 4px 8px;}',
-      '.tt-plan-head .bk{display:flex;align-items:baseline;justify-content:space-between;}',
-      '.tt-plan-head .bkn{font-size:17px;font-weight:800;}',
-      '.tt-plan-head .mod{font-size:12.5px;color:#3CBFB7;cursor:pointer;}',
-      '.tt-prog{margin:10px 0 4px;}',
-      '.tt-prog .track{height:6px;border-radius:3px;background:#EDF2F2;overflow:hidden;}',
-      '.tt-prog .fill{height:100%;background:#3CBFB7;border-radius:3px;transition:width .3s;}',
-      '.tt-prog .nums{display:flex;justify-content:space-between;font-size:12px;color:#93a7a5;margin-top:5px;}',
-      '.tt-plan-tb{width:100%;border-collapse:separate;border-spacing:0 6px;font-size:12.5px;}',
-      '.tt-plan-tb th{color:#9fb0ae;font-weight:600;padding:4px 2px;text-align:center;font-size:12px;position:sticky;top:0;background:#fff;}',
-      '.tt-plan-tb td{text-align:center;padding:2px;}',
-      '.tt-plan-tb .dayc{color:#3CBFB7;font-weight:700;white-space:nowrap;}',
-      '.tt-cell{display:inline-flex;align-items:center;justify-content:center;min-width:52px;height:30px;padding:0 8px;border-radius:8px;background:#F4F7F7;color:#5c6b6a;font-weight:600;}',
-      '.tt-cell.done{background:#3CBFB7;color:#fff;box-shadow:0 2px 8px rgba(60,191,183,.28);}',
-      '.tt-cell .ck{margin-left:4px;font-size:11px;}',
-      '.tt-plan-tb tr.today td .dayc{background:#3CBFB7;color:#fff;border-radius:8px;padding:2px 8px;}',
-      /* 开局卡 */
+      /* 底栏（主界面） */
+      '.tt-bbar{height:58px;flex-shrink:0;display:flex;align-items:center;gap:12px;padding:0 18px;background:#fff;border-top:1px solid #F5F7F7;}',
+      '.tt-bbar .tt-list{background:#F2F5F5;color:#6d7f7d;font-size:13px;font-weight:700;border-radius:10px;padding:8px 14px;flex-shrink:0;}',
+      '.tt-bbar .tt-tip{flex:1;text-align:center;font-size:12.5px;color:#b7c2c1;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;}',
+      '.tt-bbar .tt-bic{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#5c6b6a;flex-shrink:0;}',
+      '.tt-bbar .tt-bic:hover{background:#F3F7F7;}',
+      '.tt-bbar .tt-bic svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}',
+      /* Day 下拉面板（底部卡片） */
+      '.tt-mask{position:absolute;inset:0;background:rgba(0,0,0,.28);z-index:10;display:none;}',
+      '.tt-mask.open{display:block;}',
+      '.tt-sheet{position:absolute;left:50%;bottom:26px;transform:translateX(-50%);width:min(560px,92%);background:#fff;border-radius:18px;padding:18px 20px 10px;z-index:11;display:none;box-shadow:0 18px 60px rgba(0,0,0,.16);}',
+      '.tt-sheet.open{display:block;}',
+      '.tt-sheet .ss-lab{font-size:12px;color:#a3b3b1;margin:2px 0 8px;}',
+      '.tt-sheet .ss-seg{display:flex;background:#F3F6F6;border-radius:12px;padding:4px;margin-bottom:16px;}',
+      '.tt-sheet .ss-op{flex:1;text-align:center;padding:9px 0;border-radius:9px;font-size:13.5px;color:#9fb0ae;cursor:pointer;user-select:none;}',
+      '.tt-sheet .ss-op.on{background:#fff;color:#2b3635;font-weight:700;box-shadow:0 2px 8px rgba(0,0,0,.08);}',
+      '.tt-sheet .ss-tr{display:flex;align-items:center;gap:10px;padding:13px 6px;border-top:1px solid #F3F6F6;cursor:pointer;font-size:14.5px;color:#43504f;}',
+      '.tt-sheet .ss-tr:hover{background:#FAFDFD;}',
+      '.tt-sheet .ss-tr svg{width:20px;height:20px;fill:none;stroke:#1F9A92;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0;}',
+      '.tt-sheet .ss-tr .arr{margin-left:auto;color:#c3cfce;font-size:14px;}',
+      /* 计划页（官方版） */
+      '.tt-plan-head{padding:10px 2px 0;}',
+      '.tt-plan-head .cap{font-size:12px;color:#a3b3b1;}',
+      '.tt-plan-head .bk{display:flex;align-items:center;justify-content:space-between;margin-top:8px;padding-bottom:12px;border-bottom:1px solid #F0F3F3;}',
+      '.tt-plan-head .bkn{font-size:17px;font-weight:800;color:#2b3635;}',
+      '.tt-plan-head .mod{font-size:13px;color:#3CBFB7;cursor:pointer;font-weight:600;}',
+      '.tt-plan-head .nums{display:flex;justify-content:space-between;font-size:12.5px;color:#9fb0ae;padding:10px 2px;}',
+      '.tt-plan-tb{width:100%;border-collapse:collapse;font-size:13px;}',
+      '.tt-plan-tb th{color:#9fb0ae;font-weight:500;padding:10px 4px;text-align:center;font-size:12.5px;border-bottom:1px solid #F0F3F3;position:sticky;top:0;background:#fff;}',
+      '.tt-plan-tb th:first-child{text-align:left;padding-left:6px;}',
+      '.tt-plan-tb td{text-align:center;padding:11px 4px;color:#8fa5a3;}',
+      '.tt-plan-tb td:first-child{text-align:left;padding-left:6px;}',
+      '.tt-plan-tb td .dayc{color:#4d5c5a;font-weight:600;}',
+      '.tt-plan-tb tr.today td{background:#EAF7F6;}',
+      '.tt-plan-tb tr.today td .dayc{color:#1F9A92;text-decoration:underline;font-weight:700;}',
+      '.tt-plan-tb td .lst.done{color:#4d5c5a;font-weight:600;}',
+      /* 通用页（个人中心/设置） */
+      '.tt-page-title{text-align:center;font-size:17px;font-weight:700;flex:1;color:#2b3635;}',
+      '.tt-me{max-width:520px;margin:0 auto;padding:30px 20px;text-align:center;}',
+      '.tt-me .ava{width:76px;height:76px;border-radius:50%;background:#EAF4F3;margin:0 auto;display:flex;align-items:center;justify-content:center;}',
+      '.tt-me .ava svg{width:40px;height:40px;fill:none;stroke:#7BC5C0;stroke-width:2;}',
+      '.tt-me .nm{font-size:15.5px;font-weight:700;color:#43504f;margin:12px 0 26px;}',
+      '.tt-me .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;max-width:400px;margin:0 auto;}',
+      '.tt-me .card{background:#F7FAFA;border-radius:14px;padding:20px 10px;cursor:pointer;position:relative;}',
+      '.tt-me .card:hover{background:#F1F7F6;}',
+      '.tt-me .card .ci{width:44px;height:44px;margin:0 auto 8px;border-radius:12px;background:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,.05);}',
+      '.tt-me .card .ci svg{width:22px;height:22px;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}',
+      '.tt-me .card .cn{font-size:13.5px;font-weight:700;color:#43504f;}',
+      '.tt-me .card .cs{font-size:11.5px;color:#a3b3b1;margin-top:3px;}',
+      '.tt-me .card .dot{position:absolute;top:10px;right:12px;background:#F56C6C;color:#fff;font-size:10px;min-width:16px;height:16px;border-radius:8px;line-height:16px;}',
+      '.tt-me .sync{margin-top:30px;font-size:12.5px;color:#a3b3b1;cursor:pointer;}',
+      /* 设置页 */
+      '.tt-set{max-width:560px;margin:0 auto;padding:10px 20px 60px;}',
+      '.tt-set .cap{font-size:12px;color:#a3b3b1;margin:18px 2px 6px;}',
+      '.tt-set .grp{background:#fff;border-radius:0;}',
+      '.tt-set .it{display:flex;align-items:center;justify-content:space-between;padding:15px 6px;border-bottom:1px solid #F3F6F6;font-size:14.5px;color:#43504f;cursor:pointer;}',
+      '.tt-set .it:last-child{border-bottom:none;}',
+      '.tt-set .it:hover{background:#FAFDFD;}',
+      '.tt-set .it .val{color:#a3b3b1;font-size:13.5px;margin-right:6px;}',
+      '.tt-set .it .arr{color:#c3cfce;}',
+      '.tt-set .logout{display:block;margin:40px auto 0;background:#3CBFB7;color:#fff;border:none;border-radius:24px;padding:12px 60px;font-size:14.5px;font-weight:700;cursor:pointer;font-family:inherit;}',
+      /* 开局卡 / 通用按钮 */
       '.tt-start{background:#fff;border:1px solid #EAF1F0;border-radius:18px;padding:22px;text-align:center;margin-top:14px;box-shadow:0 6px 24px rgba(60,191,183,.08);}',
       '.tt-start .h{font-size:18px;font-weight:800;margin-bottom:6px;}',
       '.tt-start .sub{font-size:13px;color:#8fa5a3;margin-bottom:16px;}',
@@ -2561,25 +2632,14 @@
       '.tt-pd.on{border-color:#3CBFB7;color:#1F9A92;background:#EFF9F8;}',
       '.tt-btn{background:#3CBFB7;color:#fff;border:none;border-radius:24px;padding:12px 34px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;box-shadow:0 6px 18px rgba(60,191,183,.35);}',
       '.tt-btn:active{transform:scale(.98);}',
-      /* 抽屉 */
-      '.tt-mask{position:absolute;inset:0;background:rgba(0,0,0,.28);z-index:10;display:none;}',
-      '.tt-mask.open{display:block;}',
-      '.tt-drawer{position:absolute;top:0;bottom:0;left:0;width:270px;background:#fff;z-index:11;transform:translateX(-105%);transition:transform .22s ease;padding:18px 12px;display:flex;flex-direction:column;gap:2px;box-shadow:8px 0 30px rgba(0,0,0,.06);}',
-      '.tt-drawer.open{transform:none;}',
-      '.tt-drawer .dt{font-size:16px;font-weight:800;padding:6px 10px 14px;color:#2b3635;}',
-      '.tt-drawer .di{display:flex;align-items:center;gap:10px;padding:11px 12px;border-radius:12px;cursor:pointer;font-size:14px;color:#43504f;}',
-      '.tt-drawer .di:hover{background:#F3F9F8;}',
-      '.tt-drawer .di.on{background:#EFF9F8;color:#1F9A92;font-weight:700;}',
-      '.tt-drawer .di svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;}',
-      '.tt-drawer .sep{height:1px;background:#F0F4F4;margin:8px 6px;}',
-      /* 模式页 */
+      /* 模式宫格 */
       '.tt-modes{display:flex;gap:14px;justify-content:center;margin-top:26px;flex-wrap:wrap;}',
       '.tt-mode{width:150px;border:1.5px solid #E3ECEB;border-radius:18px;padding:22px 10px;text-align:center;cursor:pointer;transition:.15s;background:#fff;}',
       '.tt-mode:hover{border-color:#3CBFB7;transform:translateY(-2px);box-shadow:0 8px 22px rgba(60,191,183,.14);}',
       '.tt-mode .mi{width:52px;height:52px;margin:0 auto 10px;border-radius:16px;background:#EFF9F8;display:flex;align-items:center;justify-content:center;}',
       '.tt-mode .mi svg{width:26px;height:26px;stroke:#1F9A92;fill:none;stroke-width:2;}',
       '.tt-mode .mn{font-size:14.5px;font-weight:700;color:#2b3635;}',
-      /* 练习卡（听/拼/选共用） */
+      /* 练习卡 */
       '.tt-quiz{max-width:560px;margin:24px auto;background:#fff;border:1px solid #EAF1F0;border-radius:20px;padding:26px;box-shadow:0 8px 30px rgba(60,191,183,.08);}',
       '.tt-quiz .qtop{display:flex;justify-content:space-between;align-items:center;font-size:13px;color:#93a7a5;margin-bottom:14px;}',
       '.tt-quiz .big{font-size:30px;font-weight:800;text-align:center;color:#2b3635;margin:10px 0 6px;}',
@@ -2599,42 +2659,9 @@
       '.tt-search input:focus{border-color:#3CBFB7;}',
       /* toast */
       '#tw-tt-toast{position:fixed;left:50%;bottom:60px;transform:translateX(-50%);background:rgba(43,54,53,.88);color:#fff;font-size:13px;padding:9px 18px;border-radius:20px;z-index:100000;opacity:0;transition:opacity .25s;pointer-events:none;}',
-      '#tw-tt-toast.show{opacity:1;}',
-      /* 侧边栏按钮 */
-      'a.row#tw-tt-nav svg{flex-shrink:0;}',
-      '.aside a.row#tw-tt-nav.active{background:#F0F4F4;}'
+      '#tw-tt-toast.show{opacity:1;}'
     ].join('\n');
-    var s = document.createElement('style');
-    s.id = 'tw-tantan-style';
-    s.textContent = css;
-    document.head.appendChild(s);
-  }
-
-  /* ---------- 侧边栏按钮 ---------- */
-  function injectTantanNav() {
-    ttEnsureStyle();
-    var aside = document.querySelector('.aside.fixed') || document.querySelector('.aside');
-    if (!aside) return;
-    var btn = document.getElementById('tw-tt-nav');
-    // Vue 重新渲染 aside 时可能 patch 复用我们的节点（内容被改成原生导航），需检测重建
-    if (btn && (!aside.contains(btn) || btn.textContent.indexOf('炭炭单词') < 0 || btn.getAttribute('href') !== 'javascript:;')) {
-      btn.remove();
-      btn = null;
-    }
-    if (!btn) {
-      btn = document.createElement('a');
-      btn.id = 'tw-tt-nav';
-      btn.className = 'row';
-      btn.setAttribute('href', 'javascript:;');
-      var svg = '<svg viewBox="0 0 20 20" width="1.2em" height="1.2em"><rect x="2.2" y="2.2" width="15.6" height="15.6" rx="4.4" fill="#3CBFB7"/><path d="M6 7.4h8M6 10h8M6 12.6h5.2" stroke="#fff" stroke-width="1.5" stroke-linecap="round" fill="none"/></svg>';
-      btn.innerHTML = svg + '<span>炭炭单词</span>';
-      // 只能 append 到容器末尾：在 Vue 管理的导航列表中间插 foreign 节点会打乱其 diff 锚点，
-      // 导致「单词/资料」等原生项被错误 patch 而消失（实测复现过）
-      var top = aside.querySelector('.top') || aside;
-      top.appendChild(btn);
-      btn.addEventListener('click', function (e) { e.preventDefault(); e.stopPropagation(); ttOpen(); });
-    }
-    ttEnsureOverlay();
+    st.textContent = css;
   }
 
   /* ---------- overlay 骨架 ---------- */
@@ -2644,24 +2671,41 @@
     app.id = 'tw-tantan-app';
     app.innerHTML =
       '<div class="tt-top">' +
-      '  <div class="tt-ic" data-a="menu"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/></svg></div>' +
-      '  <div class="tt-ic" data-a="prev"><svg viewBox="0 0 24 24"><path d="M14.5 5.5 8 12l6.5 6.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg></div>' +
+      '  <div class="tt-ic" data-a="menu"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg></div>' +
+      '  <div class="tt-ic" data-a="back"><svg viewBox="0 0 24 24"><path d="M14.5 5.5 8 12l6.5 6.5"/></svg></div>' +
+      '  <div class="tt-ic" data-a="prev"><svg viewBox="0 0 24 24"><path d="M14.5 5.5 8 12l6.5 6.5"/></svg></div>' +
       '  <div class="tt-day" data-a="day">Day 1 <span class="caret">▼</span></div>' +
-      '  <div class="tt-ic" data-a="next"><svg viewBox="0 0 24 24"><path d="m9.5 5.5 6.5 6.5-6.5 6.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg></div>' +
-      '  <div class="tt-ic" data-a="search"><svg viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5" stroke="currentColor" stroke-width="2" fill="none"/><path d="m15.5 15.5 5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></div>' +
+      '  <div class="tt-ic" data-a="next"><svg viewBox="0 0 24 24"><path d="m9.5 5.5 6.5 6.5-6.5 6.5"/></svg></div>' +
+      '  <div class="tt-ic" data-a="search"><svg viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m15.5 15.5 5 5"/></svg></div>' +
+      '  <div class="tt-extra" data-a="extra"></div>' +
       '</div>' +
       '<div class="tt-search"><input placeholder="搜索单词…" /></div>' +
       '<div class="tt-body"><div class="tt-wrap"></div></div>' +
+      '<div class="tt-bbar">' +
+      '  <span class="tt-list">List1</span>' +
+      '  <span class="tt-tip">长按查词 | 点过这里，查看说明</span>' +
+      '  <span class="tt-bic" data-a="listen" title="随身听"><svg viewBox="0 0 24 24"><path d="M4 13a8 8 0 0 1 16 0M4 13v4a2 2 0 0 0 2 2h1v-6H5a1 1 0 0 0-1 1zM20 13v4a2 2 0 0 1-2 2h-1v-6h2a1 1 0 0 1 1 1z"/></svg></span>' +
+      '  <span class="tt-bic" data-a="plan" title="学习计划"><svg viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="16" rx="2.5"/><path d="M3.5 9.5h17M8 3v3M16 3v3"/></svg></span>' +
+      '</div>' +
       '<div class="tt-mask"></div>' +
-      '<div class="tt-drawer">' +
-      '  <div class="dt">炭炭单词</div>' +
-      '  <div class="di" data-v="study"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h10"/></svg>列表学习</div>' +
-      '  <div class="di" data-v="plan"><svg viewBox="0 0 24 24"><rect x="3.5" y="4.5" width="17" height="16" rx="2.5"/><path d="M3.5 9.5h17M8 3v3M16 3v3"/></svg>学习计划</div>' +
-      '  <div class="di" data-v="modes"><svg viewBox="0 0 24 24"><path d="M8 6.5v11l8-5.5z"/></svg>学习模式</div>' +
-      '  <div class="di" data-v="vocab"><svg viewBox="0 0 24 24"><path d="m12 3.6 2.5 5.2 5.7.8-4.1 4 1 5.7-5.1-2.7-5.1 2.7 1-5.7-4.1-4 5.7-.8z"/></svg>生词本 <span class="tt-vn"></span></div>' +
-      '  <div class="di" data-v="books"><svg viewBox="0 0 24 24"><path d="M5 4.5h6a2 2 0 0 1 2 2V20a2 2 0 0 0-2-2H5zM19 4.5h-6"/></svg>词书</div>' +
-      '  <div class="sep"></div>' +
-      '  <div class="di" data-a="exit"><svg viewBox="0 0 24 24"><path d="m10 19-7-7 7-7M3 12h18"/></svg>返回单词界面</div>' +
+      '<div class="tt-sheet">' +
+      '  <div class="ss-lab">单词显示</div>' +
+      '  <div class="ss-seg" data-k="dispMode">' +
+      '    <div class="ss-op" data-v="both">中英显示</div>' +
+      '    <div class="ss-op" data-v="maskCN">遮罩中文</div>' +
+      '    <div class="ss-op" data-v="maskEN">遮罩英文</div>' +
+      '  </div>' +
+      '  <div class="ss-lab">单词排序</div>' +
+      '  <div class="ss-seg" data-k="sortMode">' +
+      '    <div class="ss-op" data-v="orig">原始排序</div>' +
+      '    <div class="ss-op" data-v="alpha">字母正序</div>' +
+      '    <div class="ss-op" data-v="rand">随机乱序</div>' +
+      '    <div class="ss-op" data-v="mark">标记排序</div>' +
+      '  </div>' +
+      '  <div class="ss-lab">单词训练</div>' +
+      '  <div class="ss-tr" data-m="listen"><svg viewBox="0 0 24 24"><path d="M4 13a8 8 0 0 1 16 0M4 13v4a2 2 0 0 0 2 2h1v-6H5a1 1 0 0 0-1 1zM20 13v4a2 2 0 0 1-2 2h-1v-6h2a1 1 0 0 1 1 1z"/></svg>随身听<span class="arr">›</span></div>' +
+      '  <div class="ss-tr" data-m="spell"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8 9h8M8 13h8M8 17h4"/></svg>单词拼写<span class="arr">›</span></div>' +
+      '  <div class="ss-tr" data-m="choice"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="m8.5 12 2.5 2.5 5-5.5"/></svg>选择题测试<span class="arr">›</span></div>' +
       '</div>';
     document.body.appendChild(app);
     var body = app.querySelector('.tt-body');
@@ -2671,36 +2715,72 @@
       var ic = e.target.closest('[data-a]');
       if (!ic) return;
       var a = ic.getAttribute('data-a');
-      if (a === 'menu') ttToggleDrawer();
+      if (a === 'menu') { TT.view = 'me'; ttRender(); }
+      else if (a === 'back') { ttGoBack(); }
       else if (a === 'prev') ttShiftDay(-1);
       else if (a === 'next') ttShiftDay(1);
       else if (a === 'search') {
+        if (TT.view !== 'study') return;
         var sb = app.querySelector('.tt-search');
         sb.classList.toggle('open');
         if (sb.classList.contains('open')) sb.querySelector('input').focus();
         else { TT.searchQ = ''; ttRender(); }
-      } else if (a === 'day') { TT.view = 'plan'; ttRender(); }
+      } else if (a === 'day') {
+        if (TT.view === 'study') ttToggleSheet();
+      } else if (a === 'extra') {
+        if (TT.view === 'plan') ttPlanPdf();
+        else if (TT.view === 'me') { TT.view = 'settings'; ttRender(); }
+      }
     });
     app.querySelector('.tt-search input').addEventListener('input', function (e) {
       TT.searchQ = e.target.value.trim().toLowerCase();
       ttRender();
     });
-    app.querySelector('.tt-drawer').addEventListener('click', function (e) {
-      var di = e.target.closest('.di');
-      if (!di) return;
-      if (di.getAttribute('data-a') === 'exit') { ttClose(); return; }
-      TT.view = di.getAttribute('data-v');
-      TT.drawer = false; TT.searchQ = '';
-      app.querySelector('.tt-search').classList.remove('open');
-      ttRender();
+    /* 底栏：随身听 / 学习计划 */
+    app.querySelector('.tt-bbar').addEventListener('click', function (e) {
+      var ic = e.target.closest('[data-a]');
+      if (!ic) return;
+      var a = ic.getAttribute('data-a');
+      if (a === 'listen') ttQuiz('listen');
+      else if (a === 'plan') { TT.view = 'plan'; ttRender(); }
     });
-    app.querySelector('.tt-mask').addEventListener('click', ttToggleDrawer);
+    /* Day 面板 */
+    app.querySelector('.tt-sheet').addEventListener('click', function (e) {
+      var tr = e.target.closest('.ss-tr');
+      if (tr) { ttToggleSheet(false); ttQuiz(tr.getAttribute('data-m')); return; }
+      var op = e.target.closest('.ss-op');
+      if (op) {
+        var seg = op.closest('.ss-seg');
+        var k = seg.getAttribute('data-k');
+        TT.st[k] = op.getAttribute('data-v');
+        ttSave(); ttRender(); ttSyncSheet();
+      }
+    });
+    app.querySelector('.tt-mask').addEventListener('click', function () { ttToggleSheet(false); });
   }
-  function ttToggleDrawer() {
+  function ttToggleSheet(force) {
     var app = document.getElementById('tw-tantan-app');
-    TT.drawer = !TT.drawer;
-    app.querySelector('.tt-drawer').classList.toggle('open', TT.drawer);
-    app.querySelector('.tt-mask').classList.toggle('open', TT.drawer);
+    if (!app) return;
+    var open = typeof force === 'boolean' ? force : !TT.sheet;
+    TT.sheet = open;
+    app.querySelector('.tt-sheet').classList.toggle('open', open);
+    app.querySelector('.tt-mask').classList.toggle('open', open);
+    if (open) ttSyncSheet();
+  }
+  function ttSyncSheet() {
+    var app = document.getElementById('tw-tantan-app');
+    if (!app) return;
+    var segs = app.querySelectorAll('.ss-seg');
+    for (var i = 0; i < segs.length; i++) {
+      var k = segs[i].getAttribute('data-k');
+      var ops = segs[i].querySelectorAll('.ss-op');
+      for (var j = 0; j < ops.length; j++) ops[j].classList.toggle('on', ops[j].getAttribute('data-v') === TT.st[k]);
+    }
+  }
+  function ttGoBack() {
+    if (TT.sheet) { ttToggleSheet(false); return; }
+    if (TT.view !== 'study') { TT.view = 'study'; TT.searchQ = ''; ttRender(); }
+    else ttClose();
   }
   function ttShiftDay(n) {
     var t = ttToday() || 1;
@@ -2745,71 +2825,94 @@
   }
 
   /* ---------- 渲染分发 ---------- */
+  var TT_TITLES = { plan: '学习计划', me: '个人中心', settings: '设置', modes: '学习模式', vocab: '生词本', books: '词书' };
   function ttRender() {
     var app = document.getElementById('tw-tantan-app');
     if (!app || !app.classList.contains('open')) return;
     var t = ttToday() || 1;
     if (!TT.day) TT.day = t;
-    // 顶栏
+    var isStudy = TT.view === 'study';
+    // 顶栏图标显隐
+    app.querySelector('[data-a="menu"]').classList.toggle('hide', !isStudy);
+    app.querySelector('[data-a="prev"]').classList.toggle('hide', !isStudy);
+    app.querySelector('[data-a="next"]').classList.toggle('hide', !isStudy);
+    app.querySelector('[data-a="search"]').classList.toggle('hide', !isStudy);
+    app.querySelector('[data-a="back"]').classList.toggle('hide', false);
     var dayEl = app.querySelector('.tt-day');
-    if (TT.view === 'study' || TT.view === 'plan') dayEl.innerHTML = 'Day ' + (TT.view === 'plan' ? t : TT.day) + ' <span class="caret">▼</span>';
-    else dayEl.innerHTML = '炭炭单词';
-    // 抽屉高亮
-    var dis = app.querySelectorAll('.tt-drawer .di[data-v]');
-    for (var i = 0; i < dis.length; i++) dis[i].classList.toggle('on', dis[i].getAttribute('data-v') === TT.view);
-    var vn = app.querySelector('.tt-vn');
-    if (vn) vn.textContent = Object.keys(TT.st.vocab).length ? '(' + Object.keys(TT.st.vocab).length + ')' : '';
+    if (isStudy) dayEl.innerHTML = 'Day ' + TT.day + ' <span class="caret">▼</span>';
+    else { dayEl.textContent = TT_TITLES[TT.view] || '炭炭单词'; }
+    dayEl.classList.toggle('plain', !isStudy);
+    var extra = app.querySelector('.tt-extra');
+    if (TT.view === 'plan') { extra.innerHTML = 'PDF'; extra.classList.remove('hide'); }
+    else if (TT.view === 'me') { extra.innerHTML = '<svg viewBox="0 0 24 24" style="width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;vertical-align:-4px;"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 13.5a7.6 7.6 0 0 0 0-3l2-1.5-2-3.4-2.3.9a7.6 7.6 0 0 0-2.6-1.5L14 2.5h-4l-.5 2.5a7.6 7.6 0 0 0-2.6 1.5l-2.3-.9-2 3.4 2 1.5a7.6 7.6 0 0 0 0 3l-2 1.5 2 3.4 2.3-.9a7.6 7.6 0 0 0 2.6 1.5l.5 2.5h4l.5-2.5a7.6 7.6 0 0 0 2.6-1.5l2.3.9 2-3.4z"/></svg>'; extra.classList.remove('hide'); }
+    else extra.classList.add('hide');
+    // 底栏：仅主界面显示
+    app.querySelector('.tt-bbar').style.display = isStudy ? 'flex' : 'none';
+    if (isStudy) app.querySelector('.tt-list').textContent = 'List' + TT.day;
+    // 搜索条
+    if (!isStudy) app.querySelector('.tt-search').classList.remove('open');
+    if (TT.sheet) ttToggleSheet(false);
     var wrap = app.querySelector('.tt-wrap');
-    if (TT.view === 'study') ttRenderStudy(wrap);
+    if (!TT.words && (isStudy || TT.view === 'plan' || TT.view === 'vocab')) {
+      wrap.innerHTML = '<div style="text-align:center;color:#9fb0ae;padding:60px 0;font-size:14px;">词库加载中…</div>';
+      return;
+    }
+    if (isStudy) ttRenderStudy(wrap);
     else if (TT.view === 'plan') ttRenderPlan(wrap);
+    else if (TT.view === 'me') ttRenderMe(wrap);
+    else if (TT.view === 'settings') ttRenderSettings(wrap);
     else if (TT.view === 'modes') ttRenderModes(wrap);
     else if (TT.view === 'vocab') ttRenderVocab(wrap);
     else if (TT.view === 'books') ttRenderBooks(wrap);
   }
 
-  /* ---------- 学习页 ---------- */
-  function ttRowHTML(idx, label) {
+  /* ---------- 主界面（官方版式） ---------- */
+  function ttMaskBits(rev) {
+    // 返回 {enMasked, cnMasked}
+    var m = TT.st.dispMode || 'maskCN';
+    return { enMasked: m === 'maskEN' && !rev, cnMasked: m === 'maskCN' && !rev };
+  }
+  function ttRowHTML(idx, seq) {
     var w = TT.words[idx];
     if (!w) return '';
-    var fam = ttFam(w.word), known = ttIsKnown(w), vocab = ttIsVocab(w);
+    var known = ttIsKnown(w), vocab = ttIsVocab(w), marked = ttIsMarked(w);
     var trans = ttTransOne(w);
+    var rev = !!TT.revealed[w.word] || (TT.st.dispMode === 'both');
+    var mb = ttMaskBits(rev);
     return '' +
       '<div class="tt-row' + (known ? ' ghost' : '') + '" data-idx="' + idx + '">' +
       '  <div class="tt-acts r"><button class="tt-act know" data-op="know"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="m8.5 12.5 2.5 2.5 5-5.5"/></svg>熟知</button></div>' +
       '  <div class="tt-acts l"><button class="tt-act dec" data-op="dec"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>标记-1</button><button class="tt-act edit" data-op="edit"><svg viewBox="0 0 24 24"><path d="m14.5 5.5 4 4L9 19H5v-4zM12.5 7.5l4 4"/></svg>编辑</button><button class="tt-act vocab" data-op="vocab"><svg viewBox="0 0 24 24"><path d="m12 4 2.3 4.8 5.2.7-3.8 3.6.9 5.2-4.6-2.5-4.6 2.5.9-5.2L4.5 9.5l5.2-.7z"/></svg>生词</button></div>' +
       '  <div class="tt-rowmain">' +
-      '    <div class="tt-badge" style="background:' + ttBadgeColor(fam) + '">' + fam + '</div>' +
-      '    <div class="tt-wc"><div class="tt-word">' + w.word + (vocab ? '<span class="star">★</span>' : '') + '</div><div class="tt-ph">[' + (w.phonetic0 || '') + ']</div></div>' +
-      '    <div class="tt-trans">' + trans + '</div>' +
+      '    <div class="tt-num' + (marked ? ' hot' : '') + '">' + seq + '</div>' +
+      '    <div class="tt-wc"><div class="tt-word">' + (mb.enMasked ? '<span style="color:#b9c4c3;font-weight:500;">点击显示</span>' : w.word + (vocab ? '<span class="star">★</span>' : '')) + '</div><div class="tt-ph">' + (mb.enMasked ? '' : '英 [' + (w.phonetic0 || '') + ']') + '</div></div>' +
+      '    <div class="tt-trans' + (mb.cnMasked ? '' : ' show') + '">' + (mb.cnMasked ? '点击显示' : trans) + '</div>' +
       '  </div>' +
       '</div>';
   }
   function ttRenderStudy(wrap) {
     if (TT.searchQ) return ttRenderSearch(wrap);
-    if (!TT.words) { wrap.innerHTML = '<div style="text-align:center;color:#9fb0ae;padding:60px 0;font-size:14px;">词库加载中…</div>'; return; }
     var st = TT.st;
-    var html = '';
     if (!st.startDate) { // 开局设置
       var total = TT.words.length;
       var opts = [10, 15, 20, 30, 50];
-      html += '<div class="tt-start"><div class="h">开启你的单词记忆之旅</div><div class="sub">共 ' + total + ' 词 · 艾宾浩斯记忆曲线安排复习（1/2/4/7/15 天后）</div><div class="tt-perdays">';
+      var html = '<div class="tt-start"><div class="h">开启你的单词记忆之旅</div><div class="sub">共 ' + total + ' 词 · 艾宾浩斯记忆曲线安排复习（1/2/4/7/15 天后）</div><div class="tt-perdays">';
       for (var o = 0; o < opts.length; o++) html += '<div class="tt-pd' + (st.perDay === opts[o] ? ' on' : '') + '" data-pd="' + opts[o] + '">每日 ' + opts[o] + ' 词</div>';
       html += '</div><button class="tt-btn" data-op="start">开启你的单词记忆之旅</button></div>';
       wrap.innerHTML = html;
       return;
     }
     var d = TT.day;
-    var today = ttToday();
-    html += '<div class="tt-grp"><span class="bar"></span>新学 · List ' + d + '（' + ttDayWords(d).length + ' 词）</div>';
-    var news = ttDayWords(d);
-    for (var i = 0; i < news.length; i++) html += ttRowHTML(news[i]);
+    var html = '';
+    var news = ttSortIdx(ttDayWords(d));
+    for (var i = 0; i < news.length; i++) html += ttRowHTML(news[i], i + 1);
     var revs = ttReviewSources(d);
     for (var r = 0; r < revs.length; r++) {
-      var rv = ttDayWords(revs[r].day);
-      html += '<div class="tt-grp"><span class="bar" style="background:#FFC53D"></span>复习 · List ' + revs[r].day + '（' + revs[r].gap + ' 天后）</div>';
-      for (var j = 0; j < rv.length; j++) html += ttRowHTML(rv[j]);
+      var rv = ttSortIdx(ttDayWords(revs[r].day));
+      html += '<div class="tt-grp"><span class="bar" style="background:#FFC53D"></span>复习 · List ' + revs[r].day + '（' + revs[r].gap + ' 天前）</div>';
+      for (var j = 0; j < rv.length; j++) html += ttRowHTML(rv[j], j + 1);
     }
-    html += '<div style="text-align:center;color:#b7c6c4;font-size:12px;padding:16px 0 4px;">点单词发音并展开详情 · 左滑熟知 · 右滑更多操作</div>';
+    html += '<div style="text-align:center;color:#b7c6c4;font-size:12px;padding:14px 0 4px;">点行发音并显示释义 · 左滑熟知 · 右滑更多 · 长按查词</div>';
     wrap.innerHTML = html;
   }
   function ttRenderSearch(wrap) {
@@ -2820,53 +2923,127 @@
       if (w.word.toLowerCase().indexOf(q) >= 0 || ttTransOne(w).toLowerCase().indexOf(q) >= 0) hits.push(i);
     }
     var html = '<div class="tt-grp"><span class="bar"></span>搜索「' + q + '」 · ' + hits.length + ' 个结果</div>';
-    for (var k = 0; k < hits.length; k++) html += ttRowHTML(hits[k]);
+    for (var k = 0; k < hits.length; k++) html += ttRowHTML(hits[k], k + 1);
     if (!hits.length) html += '<div style="text-align:center;color:#9fb0ae;padding:50px 0;">没有找到相关单词</div>';
     wrap.innerHTML = html;
   }
 
-  /* ---------- 计划页 ---------- */
-  function ttRenderPlan(wrap) {
-    if (!TT.words) { wrap.innerHTML = '<div style="text-align:center;color:#9fb0ae;padding:60px 0;">词库加载中…</div>'; return; }
-    var st = TT.st, total = TT.words.length, per = st.perDay || 20;
+  /* ---------- 学习计划（官方版式 + PDF） ---------- */
+  function ttPlanTableHTML() {
     var totalDay = ttTotalDay(), today = ttToday();
-    var learned = Math.min(today * per, total);
-    var leftDay = Math.max(0, totalDay - today);
-    var html = '<div class="tt-plan-head"><div class="bk"><div class="bkn">' + (TT.meta ? TT.meta.name : '') + '</div><div class="mod" data-op="gobooks">修改 ›</div></div>' +
-      '<div class="tt-prog"><div class="track"><div class="fill" style="width:' + (total ? Math.round(learned / total * 100) : 0) + '%"></div></div>' +
-      '<div class="nums"><span>' + learned + '/' + total + '</span><span>剩余 ' + leftDay + ' 天</span></div></div></div>';
-    if (!st.startDate) { html += '<div style="text-align:center;color:#9fb0ae;padding:30px 0;">尚未开始，去「列表学习」开启学习之旅</div>'; wrap.innerHTML = html; return; }
-    html += '<table class="tt-plan-tb"><thead><tr><th style="text-align:left;padding-left:6px;">日期</th><th>新学</th><th>1天后</th><th>2天后</th><th>4天后</th><th>7天后</th><th>15天后</th></tr></thead><tbody>';
-    var maxRows = Math.min(totalDay, today + 14);
+    var html = '<table class="tt-plan-tb"><thead><tr><th>日期</th><th>新学</th><th>1 天后</th><th>2 天后</th><th>4 天后</th><th>7 天后</th><th>15 天后</th></tr></thead><tbody>';
+    var maxRows = Math.min(totalDay, Math.max(today, 1) + 14);
     for (var d = 1; d <= maxRows; d++) {
-      var done = d <= today;
       html += '<tr' + (d === today ? ' class="today"' : '') + '><td><span class="dayc">Day' + d + '</span></td>';
-      // 新学列 + 复习列
       for (var c = 0; c < TT_GAPS.length + 1; c++) {
         var k = d - (c === 0 ? 0 : TT_GAPS[c - 1]);
-        if (k >= 1 && k <= totalDay) {
-          html += '<td><span class="tt-cell' + (done ? ' done' : '') + '">List' + k + (done ? '<span class="ck">✓</span>' : '') + '</span></td>';
-        } else html += '<td></td>';
+        if (k >= 1 && k <= totalDay) html += '<td><span class="lst' + (d <= today ? ' done' : '') + '">List' + k + '</span></td>';
+        else html += '<td></td>';
       }
       html += '</tr>';
     }
     html += '</tbody></table>';
+    return html;
+  }
+  function ttRenderPlan(wrap) {
+    var st = TT.st, total = TT.words.length, per = st.perDay || 20;
+    var totalDay = ttTotalDay(), today = ttToday();
+    var learned = Math.min(today * per, total);
+    var leftDay = Math.max(0, totalDay - today);
+    var html = '<div class="tt-plan-head">' +
+      '<div class="cap">在学书籍</div>' +
+      '<div class="bk"><div class="bkn">' + (TT.meta ? TT.meta.name : '') + '</div><div class="mod" data-op="gobooks">修改 ›</div></div>' +
+      '<div class="nums"><span>' + learned + '/' + total + '</span><span>剩余 ' + leftDay + ' 天</span></div>' +
+      '</div>';
+    html += ttPlanTableHTML();
     wrap.innerHTML = html;
   }
+  function ttPlanPdf() {
+    var st = TT.st, total = TT.words.length, per = st.perDay || 20;
+    var today = ttToday();
+    var learned = Math.min(today * per, total);
+    var leftDay = Math.max(0, ttTotalDay() - today);
+    var w = window.open('', '_blank');
+    if (!w) { ttToast('浏览器拦截了新窗口'); return; }
+    w.document.write('<html><head><meta charset="utf-8"><title>学习计划 · ' + (TT.meta ? TT.meta.name : '') + '</title>' +
+      '<style>body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;color:#333;padding:28px;}h2{margin:0 0 4px;}.cap{color:#999;font-size:12px;}.bk{font-size:17px;font-weight:800;margin:8px 0 2px;}.nums{display:flex;justify-content:space-between;font-size:12px;color:#888;margin:8px 0 14px;}table{width:100%;border-collapse:collapse;font-size:12.5px;}th{color:#999;font-weight:500;padding:8px 4px;border-bottom:1px solid #ddd;text-align:center;}th:first-child{text-align:left;}td{text-align:center;padding:9px 4px;color:#666;}td:first-child{text-align:left;font-weight:600;color:#333;}tr.today td{background:#EAF7F6;}tr.today td:first-child{color:#1F9A92;text-decoration:underline;}</style>' +
+      '</head><body>' +
+      '<div class="cap">在学书籍</div><h2>' + (TT.meta ? TT.meta.name : '') + '</h2>' +
+      '<div class="nums"><span>' + learned + '/' + total + '</span><span>剩余 ' + leftDay + ' 天</span></div>' +
+      ttPlanTableHTML() +
+      '</body></html>');
+    w.document.close();
+    setTimeout(function () { try { w.focus(); w.print(); } catch (e) {} }, 400);
+  }
 
-  /* ---------- 模式页 ---------- */
-  function ttRenderModes(wrap) {
-    if (!st_started()) { wrap.innerHTML = '<div style="text-align:center;color:#9fb0ae;padding:60px 0;">请先在「列表学习」开启学习之旅</div>'; return; }
-    wrap.innerHTML =
-      '<div class="tt-modes">' +
-      '  <div class="tt-mode" data-m="listen"><div class="mi"><svg viewBox="0 0 24 24"><path d="M4 13a8 8 0 0 1 16 0M4 13v4a2 2 0 0 0 2 2h1v-6H5a1 1 0 0 0-1 1zM20 13v4a2 2 0 0 1-2 2h-1v-6h2a1 1 0 0 1 1 1z"/></svg></div><div class="mn">听力模式</div></div>' +
-      '  <div class="tt-mode" data-m="spell"><div class="mi"><svg viewBox="0 0 24 24"><path d="M5 19.5c3-1 4-3.5 4-6.5V7a3 3 0 0 1 6 0M9 11h7"/></svg></div><div class="mn">拼写模式</div></div>' +
-      '  <div class="tt-mode" data-m="choice"><div class="mi"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="m8.5 12 2.5 2.5 5-5.5"/></svg></div><div class="mn">选择题模式</div></div>' +
+  /* ---------- 个人中心 ---------- */
+  function ttRenderMe(wrap) {
+    var st = TT.st;
+    var vn = Object.keys(st.vocab).length;
+    var syncTxt = '从未同步';
+    if (st.lastSave) {
+      var mins = Math.floor((Date.now() - st.lastSave) / 60000);
+      syncTxt = mins < 1 ? '刚刚' : mins < 60 ? mins + ' 分钟前' : Math.floor(mins / 60) + ' 小时前';
+    }
+    var cards =
+      '<div class="card" data-me="vocab"><div class="ci"><svg viewBox="0 0 24 24" stroke="#4A90D9"><rect x="5" y="3.5" width="14" height="17" rx="2"/><path d="M9 8h6M9 12h6M9 16h3"/></svg></div><div class="cn">我的内容</div><div class="cs">生词本 ' + vn + ' 词</div></div>' +
+      '<div class="card" data-me="equip"><div class="ci"><svg viewBox="0 0 24 24" stroke="#4A90D9"><rect x="4" y="8" width="16" height="12" rx="2"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg></div><div class="cn">装备解锁</div><div class="cs">0/7</div></div>' +
+      '<div class="card" data-me="coin"><div class="ci"><svg viewBox="0 0 24 24" stroke="#E4B315"><circle cx="12" cy="12" r="8.5"/><path d="M12 8.5v7M9.8 10.2c0-1 1-1.7 2.2-1.7s2.2.7 2.2 1.7c0 2.4-4.4 1.4-4.4 3.6 0 1 1 1.7 2.2 1.7s2.2-.7 2.2-1.7"/></svg></div><div class="cn">炭币余额</div><div class="cs">140</div></div>' +
+      '<div class="card" data-me="box"><div class="ci"><svg viewBox="0 0 24 24" stroke="#2FA57A"><rect x="4" y="8" width="16" height="12" rx="2"/><path d="M4 12h16M12 8v12M8 8l2-3.5M16 8l-2-3.5"/></svg></div><div class="cn">百宝箱</div><div class="cs">有趣聚集地</div><span class="dot">1</span></div>';
+    wrap.innerHTML = '<div class="tt-me">' +
+      '<div class="ava"><svg viewBox="0 0 24 24"><circle cx="12" cy="9" r="3.6"/><path d="M5.5 19.4c1.2-3 3.6-4.6 6.5-4.6s5.3 1.6 6.5 4.6"/></svg></div>' +
+      '<div class="nm">炭炭学员_1926282</div>' +
+      '<div class="grid">' + cards + '</div>' +
+      '<div class="sync" data-me="sync">同步数据：' + syncTxt + ' ↻</div>' +
       '</div>';
   }
-  function st_started() { return !!TT.st.startDate; }
 
-  /* ---------- 生词本 / 词书 ---------- */
+  /* ---------- 设置 ---------- */
+  function ttRenderSettings(wrap) {
+    var st = TT.st;
+    function it(key, label, val) {
+      return '<div class="it" data-set="' + key + '"><span>' + label + '</span><span class="r"><span class="val">' + (val || '') + '</span><span class="arr">›</span></span></div>';
+    }
+    wrap.innerHTML = '<div class="tt-set">' +
+      '<div class="cap">账号设置</div><div class="grp">' + it('account', '账号管理') + '</div>' +
+      '<div class="cap">学习设置</div><div class="grp">' +
+      it('accent', '单词发音', st.accent === '美' ? '美音' : '英音') +
+      it('rowset', '单词行设置') +
+      it('longpress', '长按查词设置') +
+      it('gobooks', '更换词书', TT.meta ? TT.meta.name : '') +
+      it('sync', '同步学习数据') +
+      '</div>' +
+      '<div class="cap">内容设置</div><div class="grp">' + it('restore', '一键还原导入释义') + '</div>' +
+      '<div class="cap">应用设置</div><div class="grp">' +
+      it('theme', '外观主题', '跟随系统（亮白）') +
+      it('fontsize', '字体大小') +
+      it('remind', '学习提醒') +
+      it('msg', '消息提醒') +
+      '</div>' +
+      '<div class="cap">其他</div><div class="grp">' +
+      it('praise', '好评鼓励') +
+      it('help', '帮助与反馈') +
+      it('more', '更多产品') +
+      it('privacy', '个人信息收集清单') +
+      it('third', '第三方信息共享清单') +
+      it('recommend', '个性化推荐') +
+      it('report', '举报投诉') +
+      it('about', '关于我们', 'V5.8.6') +
+      '</div>' +
+      '<button class="logout" data-set="logout">退出登录</button>' +
+      '</div>';
+  }
+
+  /* ---------- 模式 / 生词本 / 词书 ---------- */
+  function ttRenderModes(wrap) {
+    if (!TT.st.startDate) { wrap.innerHTML = '<div style="text-align:center;color:#9fb0ae;padding:60px 0;">请先在主界面开启学习之旅</div>'; return; }
+    wrap.innerHTML =
+      '<div class="tt-modes">' +
+      '  <div class="tt-mode" data-m="listen"><div class="mi"><svg viewBox="0 0 24 24"><path d="M4 13a8 8 0 0 1 16 0M4 13v4a2 2 0 0 0 2 2h1v-6H5a1 1 0 0 0-1 1zM20 13v4a2 2 0 0 1-2 2h-1v-6h2a1 1 0 0 1 1 1z"/></svg></div><div class="mn">随身听</div></div>' +
+      '  <div class="tt-mode" data-m="spell"><div class="mi"><svg viewBox="0 0 24 24"><path d="M5 19.5c3-1 4-3.5 4-6.5V7a3 3 0 0 1 6 0M9 11h7"/></svg></div><div class="mn">单词拼写</div></div>' +
+      '  <div class="tt-mode" data-m="choice"><div class="mi"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="m8.5 12 2.5 2.5 5-5.5"/></svg></div><div class="mn">选择题测试</div></div>' +
+      '</div>';
+  }
   function ttRenderVocab(wrap) {
     var words = Object.keys(TT.st.vocab);
     if (!words.length) { wrap.innerHTML = '<div style="text-align:center;color:#9fb0ae;padding:60px 0;">生词本还是空的<br><span style="font-size:12px">右滑单词行 → 「生词」即可加入</span></div>'; return; }
@@ -2877,7 +3054,7 @@
     for (var k = 0; k < words.length; k++) {
       var idx = idxMap[words[k]];
       if (idx === undefined) continue;
-      html += ttRowHTML(idx);
+      html += ttRowHTML(idx, shown + 1);
       shown++;
     }
     if (!shown) html += '<div style="text-align:center;color:#9fb0ae;padding:40px 0;">当前词库中无生词记录</div>';
@@ -2893,7 +3070,7 @@
       '<div style="text-align:center;margin-top:14px;"><button class="tt-btn" data-op="golist" style="padding:10px 26px;font-size:13.5px;">去 TypeWords 选择词书</button></div></div>';
   }
 
-  /* ---------- 交互：点击 / 滑动 ---------- */
+  /* ---------- 交互：点击 / 滑动 / 长按 ---------- */
   function ttBodyClick(e) {
     var op = e.target.closest('[data-op]');
     if (op) {
@@ -2909,7 +3086,11 @@
       if (o === 'gobooks' || o === 'golist') { ttClose(); setTimeout(function () { location.href = '/typewords/dict-list'; }, 120); return; }
       if (!row || !w) return;
       if (o === 'know') { TT.st.known[w.word] = 1; delete TT.st.vocab[w.word]; ttSave(); ttToast('已加入熟知词'); ttRender(); return; }
-      if (o === 'dec') { TT.st.familiar[w.word] = Math.max(0, ttFam(w.word) - 1); ttSave(); ttRender(); return; }
+      if (o === 'dec') {
+        if (TT.st.marked && TT.st.marked[w.word]) delete TT.st.marked[w.word];
+        else { if (!TT.st.marked) TT.st.marked = {}; TT.st.marked[w.word] = 1; }
+        ttSave(); ttRender(); return;
+      }
       if (o === 'edit') {
         var cur = TT.st.edits[w.word] || ttTransOne(w);
         var v = prompt('编辑释义（' + w.word + '）', cur);
@@ -2927,7 +3108,45 @@
     if (pd) { TT.st.perDay = parseInt(pd.getAttribute('data-pd'), 10); ttSave(); ttRender(); return; }
     var mode = e.target.closest('[data-m]');
     if (mode) { ttQuiz(mode.getAttribute('data-m')); return; }
-    // 点行：发音 + 熟悉度 +1 + 展开
+    /* 个人中心卡片 */
+    var mc = e.target.closest('[data-me]');
+    if (mc) {
+      var mk = mc.getAttribute('data-me');
+      if (mk === 'vocab') { TT.view = 'vocab'; ttRender(); }
+      else if (mk === 'settings') { TT.view = 'settings'; ttRender(); }
+      else if (mk === 'sync') { ttSave(); ttToast('已同步到本机'); ttRender(); }
+      else if (mk === 'coin') ttToast('炭币余额：140');
+      else if (mk === 'equip') ttToast('装备解锁 0/7，敬请期待');
+      else if (mk === 'box') ttToast('百宝箱即将开放');
+      return;
+    }
+    /* 设置项 */
+    var sit = e.target.closest('[data-set]');
+    if (sit) {
+      var sk = sit.getAttribute('data-set');
+      if (sk === 'accent') { TT.st.accent = TT.st.accent === '美' ? '英' : '美'; ttSave(); ttToast('单词发音：' + (TT.st.accent === '美' ? '美音' : '英音')); ttRender(); ttSpeak('word'); }
+      else if (sk === 'gobooks') { ttClose(); setTimeout(function () { location.href = '/typewords/dict-list'; }, 120); }
+      else if (sk === 'sync') {
+        var data = JSON.stringify(TT.st);
+        var inp = prompt('学习数据已生成，全选复制可备份；粘贴旧数据后确定可恢复：', data);
+        if (inp && inp.trim().charAt(0) === '{') {
+          try {
+            var obj = JSON.parse(inp);
+            if (obj && obj.perDay) { TT.st = obj; TT.st.dispMode = TT.st.dispMode || 'maskCN'; TT.st.sortMode = TT.st.sortMode || 'orig'; TT.st.accent = TT.st.accent || '英'; ttSave(); TT.meta = null; TT.words = null; ttToast('学习数据已恢复'); ttOpen(); }
+          } catch (err) { ttToast('数据格式不正确'); }
+        }
+      }
+      else if (sk === 'restore') {
+        var n = Object.keys(TT.st.edits || {}).length;
+        if (n && confirm('确定还原全部 ' + n + ' 条手动编辑的释义？')) { TT.st.edits = {}; ttSave(); ttToast('已还原'); ttRender(); }
+        else if (!n) ttToast('没有手动编辑过的释义');
+      }
+      else if (sk === 'logout') { ttClose(); ttToast('已退出（本地模式无需登录）'); }
+      else if (sk === 'account') ttToast('本地模式，无需账号');
+      else ttToast('敬请期待');
+      return;
+    }
+    /* 点行：发音 + 熟悉度 +1 + 揭示释义 */
     var main = e.target.closest('.tt-rowmain');
     if (main) {
       var r2 = main.closest('.tt-row');
@@ -2936,6 +3155,7 @@
       if (r2._dx) { r2._dx = 0; ttSnapRow(r2, 0); return; } // 展开操作态时点击先收回
       ttSpeak(w2.word);
       if (ttFam(w2.word) < 5) { TT.st.familiar[w2.word] = ttFam(w2.word) + 1; ttSave(); }
+      if (!TT.revealed[w2.word]) { TT.revealed[w2.word] = 1; ttRender(); return; }
       var det = r2.parentElement.querySelector('.tt-detail');
       if (det && det._for === i2) { det.remove(); return; }
       var old = r2.parentElement.querySelectorAll('.tt-detail');
@@ -2947,7 +3167,7 @@
       r2.insertAdjacentElement('afterend', det);
       return;
     }
-    // 详情内发音按钮
+    /* 详情内发音按钮 */
     var sp = e.target.closest('[data-speak]');
     if (sp) { ttSpeak(sp.getAttribute('data-speak')); return; }
   }
@@ -2981,25 +3201,48 @@
     return h;
   }
 
-  /* 滑动手势（Pointer Events，桌面拖拽 & 移动端触摸通用） */
+  /* 滑动手势（Pointer Events）+ 长按查词 */
   function ttRowPointerDown(e) {
     var main = e.target.closest('.tt-rowmain');
     if (!main || e.button > 0) return;
     if (e.target.closest('.tt-detail')) return;
     var row = main.closest('.tt-row');
-    var sx = e.clientX, moved = false, dx = 0;
+    var sx = e.clientX, sy = e.clientY, moved = false, dx = 0;
     main.setPointerCapture && main.setPointerCapture(e.pointerId);
     row.classList.add('no-anim');
-    function mv(ev) {
-      dx = ev.clientX - sx;
-      if (Math.abs(dx) > 4) moved = true;
-      var lim = Math.max(-120, Math.min(160, dx));
-      main.style.transform = 'translateX(' + lim + 'px)';
-    }
-    function up(ev) {
+    var lpTimer = setTimeout(function () { // 长按 550ms → 查词详情
+      lpTimer = null;
+      cleanup();
+      main.style.transform = ''; row._dx = 0;
+      var i2 = parseInt(row.getAttribute('data-idx'), 10);
+      var w2 = TT.words[i2];
+      var old = row.parentElement.querySelectorAll('.tt-detail');
+      for (var x = 0; x < old.length; x++) old[x].remove();
+      var det = document.createElement('div');
+      det.className = 'tt-detail';
+      det._for = i2;
+      det.innerHTML = ttDetailHTML(w2);
+      row.insertAdjacentElement('afterend', det);
+    }, 550);
+    function cleanup() {
       window.removeEventListener('pointermove', mv);
       window.removeEventListener('pointerup', up);
       row.classList.remove('no-anim');
+      if (lpTimer) { clearTimeout(lpTimer); lpTimer = null; }
+    }
+    function mv(ev) {
+      dx = ev.clientX - sx;
+      var dy = ev.clientY - sy;
+      if (Math.abs(dx) > 6 || Math.abs(dy) > 10) {
+        moved = true;
+        if (lpTimer) { clearTimeout(lpTimer); lpTimer = null; }
+      }
+      if (!moved) return;
+      var lim = Math.max(-120, Math.min(160, dx));
+      main.style.transform = 'translateX(' + lim + 'px)';
+    }
+    function up() {
+      cleanup();
       var target = 0;
       if (dx < -50) target = -96;       // 左滑 → 露出右侧「熟知」
       else if (dx > 50) target = 128;   // 右滑 → 露出左侧「标记-1/编辑/生词」
@@ -3018,16 +3261,18 @@
   /* ---------- 练习模式（听/拼/选） ---------- */
   function ttQuiz(mode) {
     var wrap = document.querySelector('#tw-tantan-app .tt-wrap');
+    if (!TT.st.startDate) { ttToast('请先开启学习之旅'); TT.view = 'study'; ttRender(); return; }
     var today = ttToday() || 1;
-    var pool = ttDayWords(TT.day <= ttTotalDay() ? TT.day : today);
-    if (mode === 'listen') { ttRenderListen(wrap, pool); return; }
-    if (mode === 'spell') { ttRenderSpell(wrap, pool); return; }
+    var pool = ttSortIdx(ttDayWords(TT.day <= ttTotalDay() ? TT.day : today));
+    if (mode === 'listen') { TT.view = 'modes'; ttRender(); ttRenderListen(wrap, pool); return; }
+    if (mode === 'spell') { TT.view = 'modes'; ttRender(); ttRenderSpell(wrap, pool); return; }
+    TT.view = 'modes'; ttRender();
     ttRenderChoice(wrap, pool);
   }
   function ttRenderListen(wrap, pool) {
     if (!pool.length) { wrap.innerHTML = '<div style="text-align:center;color:#9fb0ae;padding:60px 0;">本组暂无可听单词</div>'; return; }
-    var i = 0, playing = false, timer = null;
-    wrap.innerHTML = '<div class="tt-quiz"><div class="qtop"><span>听力模式</span><span class="cnt"></span></div>' +
+    var i = 0;
+    wrap.innerHTML = '<div class="tt-quiz"><div class="qtop"><span>随身听</span><span class="cnt"></span></div>' +
       '<div class="big" style="font-size:40px;">🔊</div><div class="hint">听音辨词 · 点击「显示」核对</div>' +
       '<div class="big wd" style="font-size:34px;min-height:46px;"></div><div class="hint ph"></div>' +
       '<div class="rowbtns"><button class="tt-btn" data-l="show" style="padding:10px 24px;">显示</button>' +
@@ -3051,12 +3296,12 @@
     var i = 0, right = 0;
     function draw() {
       if (i >= order.length) {
-        wrap.innerHTML = '<div class="tt-quiz" style="text-align:center;"><div class="big">🎉</div><div class="hint">拼写完成！答对 ' + right + ' / ' + order.length + '</div><div class="rowbtns"><button class="tt-btn" data-l="back">返回模式</button></div></div>';
-        wrap.querySelector('[data-l="back"]').onclick = function () { TT.view = 'modes'; ttRender(); };
+        wrap.innerHTML = '<div class="tt-quiz" style="text-align:center;"><div class="big">🎉</div><div class="hint">拼写完成！答对 ' + right + ' / ' + order.length + '</div><div class="rowbtns"><button class="tt-btn" data-l="back">返回</button></div></div>';
+        wrap.querySelector('[data-l="back"]').onclick = function () { TT.view = 'study'; ttRender(); };
         return;
       }
       var w = TT.words[order[i]];
-      wrap.innerHTML = '<div class="tt-quiz"><div class="qtop"><span>拼写模式</span><span>' + (i + 1) + '/' + order.length + ' · 答对 ' + right + '</span></div>' +
+      wrap.innerHTML = '<div class="tt-quiz"><div class="qtop"><span>单词拼写</span><span>' + (i + 1) + '/' + order.length + ' · 答对 ' + right + '</span></div>' +
         '<div class="hint" style="font-size:15px;color:#43504f;">' + ttTransOne(w).slice(0, 60) + '</div>' +
         '<div class="hint">[' + (w.phonetic0 || '') + ']</div>' +
         '<input class="sp" autocomplete="off" spellcheck="false" placeholder="输入拼写…" />' +
@@ -3088,8 +3333,8 @@
     var i = 0, right = 0;
     function draw() {
       if (i >= order.length) {
-        wrap.innerHTML = '<div class="tt-quiz" style="text-align:center;"><div class="big">🎉</div><div class="hint">选择题完成！答对 ' + right + ' / ' + order.length + '</div><div class="rowbtns"><button class="tt-btn" data-l="back">返回模式</button></div></div>';
-        wrap.querySelector('[data-l="back"]').onclick = function () { TT.view = 'modes'; ttRender(); };
+        wrap.innerHTML = '<div class="tt-quiz" style="text-align:center;"><div class="big">🎉</div><div class="hint">选择题完成！答对 ' + right + ' / ' + order.length + '</div><div class="rowbtns"><button class="tt-btn" data-l="back">返回</button></div></div>';
+        wrap.querySelector('[data-l="back"]').onclick = function () { TT.view = 'study'; ttRender(); };
         return;
       }
       var idx = order[i], w = TT.words[idx];
@@ -3102,7 +3347,7 @@
       var opts = wrongs.map(function (k) { return { t: ttTransOne(TT.words[k]), ok: false }; });
       opts.push({ t: ttTransOne(w), ok: true });
       opts.sort(function () { return Math.random() - 0.5; });
-      wrap.innerHTML = '<div class="tt-quiz"><div class="qtop"><span>选择题 · 英译汉</span><span>' + (i + 1) + '/' + order.length + ' · 答对 ' + right + '</span></div>' +
+      wrap.innerHTML = '<div class="tt-quiz"><div class="qtop"><span>选择题测试 · 英译汉</span><span>' + (i + 1) + '/' + order.length + ' · 答对 ' + right + '</span></div>' +
         '<div class="big">' + w.word + '</div><div class="hint">[' + (w.phonetic0 || '') + ']</div><div class="opts">' +
         opts.map(function (o, n) { return '<button class="opt" data-n="' + n + '">' + o.t.slice(0, 52) + '</button>'; }).join('') +
         '</div></div>';
@@ -3120,6 +3365,7 @@
     }
     draw();
   }
+
 
   function run() {
     hideFeedback();
