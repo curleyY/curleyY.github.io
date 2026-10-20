@@ -32,6 +32,7 @@
 (function(){
   var SCRIPTS=["/js/global-error-handler.js", "/js/runtime.d72a8b48.js", "/js/npm-rxjs.2a651a07.js", "/js/i18n.eb5bc4b6.js", "/js/i18n-langs.i18n-completenesses.f3193f5f.js", "/js/npm-blocksuite.912c9df9.js", "/js/npm-react.d249c215.js", "/js/npm-jotai.ff53f772.js", "/js/npm-emotion.06ccdb5b.js", "/js/vendor.44009b03.js", "/js/index.f97caaa7.js"];
   var STYLES=["/styles.e73ab7b1.css", "/vendor.357700c4.css"];
+  var FALLBACK_MS=6000;
   function insertAll(){
     for(var i=0;i<STYLES.length;i++){
       var l=document.createElement('link');
@@ -49,17 +50,16 @@
   var canSW=('serviceWorker' in navigator)&&(typeof DecompressionStream!=='undefined');
   if(!canSW){insertAll();return;}
   // 必须等当前页面真正被 SW 控制（controllerchange）再加载资源，
-  // 否则首批请求不会经过 SW，享受不到压缩。
+  // 否则首批请求不会经过 SW，拿不到压缩版（退化为下载未压缩原文件）。
   var done=false;
   function finish(){ if(done) return; done=true; try{ navigator.serviceWorker.removeEventListener('controllerchange', onCtrl); }catch(e){} insertAll(); }
   function onCtrl(){ finish(); }
   if(navigator.serviceWorker.controller){ finish(); return; }
   navigator.serviceWorker.addEventListener('controllerchange', onCtrl);
   navigator.serviceWorker.register('/sw.js').catch(function(){});
-  navigator.serviceWorker.ready.then(function(){
-    setTimeout(finish, 150);
-  }).catch(function(){});
-  setTimeout(finish, 2000);
+  navigator.serviceWorker.ready.then(function(){ setTimeout(finish, 150); }).catch(function(){});
+  // 兜底放宽到 6s（原为 2s）：宁可多等 SW 接管，也不要退回去下载未压缩的原始大文件
+  setTimeout(finish, FALLBACK_MS);
 })();
 </script></head>
 

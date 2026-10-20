@@ -13,10 +13,11 @@
 /* global self, caches, DecompressionStream, fetch, Request, Response, atob, Blob */
 'use strict';
 
-var CACHE = 'affine-gz-v104';
+var CACHE = 'affine-gz-v105';
 var COMPRESSIBLE = /\.(js|css)(\?.*)?$/i;
 var MAX_CHUNKS = 64;
 var CHUNK_B64 = 1200000; // 分块大小参考值（与 prepare_gzip.py 保持一致）
+var CHUNK_CONCURRENCY = 8; // 分块并发下载数（原来串行拉取，往返数是首屏最大瓶颈）
 
 function mimeFor(pathname) {
   if (/\.js(\?.*)?$/i.test(pathname)) return 'application/javascript; charset=utf-8';
@@ -73,28 +74,14 @@ self.addEventListener('fetch', function (event) {
 async function handle(req, url, event) {
   var cache = await caches.open(CACHE);
   var cacheKey = new Request(url.origin + url.pathname);
-  // 1. 命中缓存（缓存的是完整 base64 文本）→ 解码解压返回
+  // 1. 命中缓存 → 直接返回（缓存里已是解码后的原始内容，无需再解压）
   var hit = await cache.match(cacheKey);
   if (hit) {
     var out = await decodeCached(hit, url);
     if (out) return out;
   }
-  // 2. 依次拉取分块（pw-xxx.js.packed.1.js / .packed.2.js / ...），直到取不到为止
-  var parts = [];
-  for (var i = 1; i <= MAX_CHUNKS; i++) {
-    var text = null;
-    try {
-      var resp = await fetch(chunkUrl(url, i), { cache: 'no-store' });
-      if (!resp.ok) break;
-      text = await resp.text();
-    } catch (e) {
-      break;
-    }
-    // 首块就必须是合法 base64，否则整体不可用（可能是 SPA fallback 的 HTML）
-    if (i === 1 && !looksLikeBase64(text)) break;
-    if (text && text.trim()) parts.push(text.trim());
-    if (text && text.trim().length < CHUNK_B64) break; // 最后一块（未满）
-  }
+  // 2. 并发拉取分块（pw-xxx.js.packed.1.js / .packed.2.js / ...），直到某块缺失为止
+  var parts = await fetchChunks(url);
   if (!parts.length) {
     return fetch(req); // 无分块：回退原文件
   }
@@ -102,41 +89,112 @@ async function handle(req, url, event) {
   if (!bytes) {
     return fetch(req); // 内容异常：回退
   }
-  // 3. 解压返回，并把完整 base64 写入缓存（省去下次重复拉分块）
+  // 3. 解压一次，之后把「解压后的原文」写入缓存：
+  //    老实现缓存的是 base64 文本，导致每次访问都要重复 base64 解码 + gunzip（CPU 开销大）
   try {
-    var ds = new DecompressionStream('gzip');
-    var out2 = new Response(new Blob([bytes]).stream().pipeThrough(ds), {
+    var plain = await gunzip(bytes);
+    if (plain) {
+      var mime = mimeFor(url.pathname);
+      event.waitUntil(
+        cache
+          .put(cacheKey, new Response(plain, { status: 200, headers: { 'Content-Type': mime } }))
+          .catch(function () {})
+      );
+      return new Response(plain, { status: 200, headers: { 'Content-Type': mime } });
+    }
+  } catch (e) {
+    /* 解压失败则走下面的流式回退 */
+  }
+  // 流式回退：直接把 gzip 流转成 DecompressionStream
+  try {
+    return new Response(new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip')), {
       status: 200,
       headers: { 'Content-Type': mimeFor(url.pathname) },
     });
-    var b64All = parts.join('');
-    event.waitUntil(
-      cache
-        .put(
-          cacheKey,
-          new Response(b64All, {
-            status: 200,
-            headers: { 'Content-Type': 'text/plain' },
-          })
-        )
-        .catch(function () {})
-    );
-    return out2;
   } catch (e) {
     return fetch(req);
   }
 }
 
+/** gzip 字节 → 原始文本（成功返回值，失败返回 null） */
+async function gunzip(bytes) {
+  if (typeof DecompressionStream === 'undefined') return null;
+  try {
+    var ds = new DecompressionStream('gzip');
+    var resp = new Response(new Blob([bytes]).stream().pipeThrough(ds));
+    return await resp.arrayBuffer
+      ? new Uint8Array(await resp.arrayBuffer())
+      : null;
+  } catch (e) {
+    return null;
+  }
+}
+
+/**
+ * 并发按序拉取某资源的所有分块。
+ * 老实现是一次 await 一块（串行），大文件（如 12MB 的主 bundle 拆 4 块）
+ * 就多花 4 个 RTT；这里按 CHUNK_CONCURRENCY 分批并发，再按序拼接。
+ */
+async function fetchChunks(url) {
+  var parts = [];
+  var last = false;
+  var i = 1;
+  while (i <= MAX_CHUNKS && !last) {
+    var upto = Math.min(MAX_CHUNKS, i + CHUNK_CONCURRENCY - 1);
+    var batch = [];
+    for (var k = i; k <= upto; k++) {
+      // 走默认缓存策略：允许复用页面预热分块时留下的 HTTP 缓存
+      batch.push(
+        fetch(chunkUrl(url, k)).catch(function () {
+          return null;
+        })
+      );
+    }
+    var resps = await Promise.all(batch);
+    for (var m = 0; m < resps.length; m++) {
+      var resp = resps[m];
+      var idx = i + m;
+      if (!resp || !resp.ok) {
+        last = true;
+        break;
+      }
+      var text = (await resp.text()).trim();
+      // 首块必须是合法 base64，否则整体不可用（可能是 SPA fallback 返回的 HTML）
+      if (idx === 1 && !looksLikeBase64(text)) {
+        last = true;
+        break;
+      }
+      if (text) parts.push(text);
+      if (text.length < CHUNK_B64) {
+        last = true; // 未满一块 ⇒ 这是最后一块
+        break;
+      }
+    }
+    i = upto + 1;
+  }
+  return parts;
+}
+
+/**
+ * 处理缓存命中：
+ * - 新版缓存（Content-Type 为 application/javascript / text/css）存的是
+ *   已解压的原文，直接返回即可，零解压开销；
+ * - 旧版缓存（text/plain）存的是 base64 文本，按原逻辑解码 + 解压。
+ */
 async function decodeCached(hit, url) {
   try {
-    var b64 = await hit.text();
-    var bytes = base64ToBytes(b64);
-    if (!bytes) return null;
-    var ds = new DecompressionStream('gzip');
-    return new Response(new Blob([bytes]).stream().pipeThrough(ds), {
-      status: 200,
-      headers: { 'Content-Type': mimeFor(url.pathname) },
-    });
+    var ct = (hit.headers.get('Content-Type') || '').toLowerCase();
+    if (ct.indexOf('text/plain') !== -1) {
+      var b64 = await hit.text();
+      var bytes = base64ToBytes(b64);
+      if (!bytes) return null;
+      if (typeof DecompressionStream === 'undefined') return null;
+      return new Response(new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip')), {
+        status: 200,
+        headers: { 'Content-Type': mimeFor(url.pathname) },
+      });
+    }
+    return hit;
   } catch (e) {
     return null;
   }
