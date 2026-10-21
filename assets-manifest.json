@@ -1,7 +1,7 @@
 {
   "publicPath": "/",
   "js": [
-    "js/runtime.d72a8b48.js",
+    "js/runtime.7cc72442.js",
     "js/npm-rxjs.2a651a07.js",
     "js/i18n.eb5bc4b6.js",
     "js/i18n-langs.i18n-completenesses.f3193f5f.js",
@@ -10,7 +10,7 @@
     "js/npm-jotai.ff53f772.js",
     "js/npm-emotion.06ccdb5b.js",
     "js/vendor.44009b03.js",
-    "js/index.f97caaa7.js"
+    "js/index.526f1583.js"
   ],
   "css": [
     "styles.e73ab7b1.css",
