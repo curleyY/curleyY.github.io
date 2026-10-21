@@ -13,7 +13,7 @@
 /* global self, caches, DecompressionStream, fetch, Request, Response, atob, Blob */
 'use strict';
 
-var CACHE = 'affine-gz-v108';
+var CACHE = 'affine-gz-v109';
 var COMPRESSIBLE = /\.(js|css)(\?.*)?$/i;
 var MAX_CHUNKS = 64;
 var CHUNK_B64 = 1200000; // 分块大小参考值（与 prepare_gzip.py 保持一致）
