@@ -28,11 +28,56 @@
     <meta property="og:description" content="There can be more than Notion and Miro. AFFiNE is a next-gen knowledge base that brings planning, sorting and creating all together.">
     <meta property="og:url" content="https://app.affine.pro/">
     <meta property="og:image" content="https://affine.pro/og.jpeg">
-  <meta content="/" name="env:publicPath"><script id="affine-gz-loader">
+  <meta content="/" name="env:publicPath"><style id="affine-boot-css">
+#affine-boot{position:fixed;left:0;right:0;top:0;bottom:0;z-index:2147483647;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:#fafafa;font-family:Inter,system-ui,-apple-system,'Segoe UI',sans-serif}
+#affine-boot .n{font-size:19px;font-weight:600;letter-spacing:.04em;color:#1e96e8}
+#affine-boot .b{width:184px;height:3px;border-radius:2px;background:rgba(0,0,0,.08);overflow:hidden}
+#affine-boot .b i{display:block;height:100%;width:0;border-radius:2px;background:#1e96e8;transition:width .18s ease}
+#affine-boot .p{font-size:12px;color:#909090;font-variant-numeric:tabular-nums}
+@media (prefers-color-scheme:dark){#affine-boot{background:#171717}#affine-boot .b{background:rgba(255,255,255,.14)}#affine-boot .p{color:#8f8f8f}}
+</style>
+<script id="affine-gz-loader">
 (function(){
   var SCRIPTS=["/js/global-error-handler.js", "/js/runtime.e5fcd041.js", "/js/npm-rxjs.2a651a07.js", "/js/i18n.eb5bc4b6.js", "/js/i18n-langs.i18n-completenesses.f3193f5f.js", "/js/npm-blocksuite.912c9df9.js", "/js/npm-react.d249c215.js", "/js/npm-jotai.ff53f772.js", "/js/npm-emotion.06ccdb5b.js", "/js/vendor.44009b03.js", "/js/index.8a99a786.js"];
   var STYLES=["/styles.e73ab7b1.css", "/vendor.b804469a.css"];
-  var FALLBACK_MS=6000;
+  var CHUNKS={"/js/global-error-handler.js":0,"/js/runtime.e5fcd041.js":1,"/js/npm-rxjs.2a651a07.js":1,"/js/i18n.eb5bc4b6.js":1,"/js/i18n-langs.i18n-completenesses.f3193f5f.js":0,"/js/npm-blocksuite.912c9df9.js":1,"/js/npm-react.d249c215.js":1,"/js/npm-jotai.ff53f772.js":1,"/js/npm-emotion.06ccdb5b.js":1,"/js/vendor.44009b03.js":2,"/js/index.8a99a786.js":4,"/styles.e73ab7b1.css":1,"/vendor.b804469a.css":1};
+  var FALLBACK_MS=15000;
+  var prefetch={}, stop=false, doneN=0, totalN=0;
+  function chunkUrl(p,i,ext){var s=p.lastIndexOf('/');return p.slice(0,s+1)+'pw-'+p.slice(s+1)+'.packed.'+i+ext;}
+  function paint(pct){
+    var bar=document.getElementById('affine-boot-bar-i');
+    if(bar) bar.style.width=pct+'%';
+    var tx=document.getElementById('affine-boot-pct');
+    if(tx) tx.textContent=pct+'%';
+  }
+  function mountBoot(){
+    if(document.getElementById('affine-boot')) return;
+    var d=document.createElement('div');
+    d.id='affine-boot';
+    d.innerHTML='<div class="n">AFFiNE</div><div class="b"><i id="affine-boot-bar-i"></i></div><div class="p" id="affine-boot-pct">0%</div>';
+    (document.body||document.documentElement).appendChild(d);
+    paint(0);
+  }
+  function dropBoot(){
+    var d=document.getElementById('affine-boot');
+    if(d&&d.parentNode) d.parentNode.removeChild(d);
+    var c=document.getElementById('affine-boot-css');
+    if(c&&c.parentNode) c.parentNode.removeChild(c);
+  }
+  function watchApp(){
+    var app=document.getElementById('app');
+    if(!app) return;
+    function done(){
+      if(app.childElementCount>0){ paint(100); setTimeout(dropBoot,120); return true; }
+      return false;
+    }
+    if(done()) return;
+    var mo=new MutationObserver(function(){ if(done()) mo.disconnect(); });
+    mo.observe(app,{childList:true});
+  }
+  function onDom(fn){ if(document.body) fn(); else document.addEventListener('DOMContentLoaded',fn); }
+  onDom(mountBoot);
+  onDom(watchApp);
   function insertAll(){
     for(var i=0;i<STYLES.length;i++){
       var l=document.createElement('link');
@@ -47,19 +92,60 @@
       document.head.appendChild(s);
     }
   }
-  var canSW=('serviceWorker' in navigator)&&(typeof DecompressionStream!=='undefined');
-  if(!canSW){insertAll();return;}
-  // 必须等当前页面真正被 SW 控制（controllerchange）再加载资源，
-  // 否则首批请求不会经过 SW，拿不到压缩版（退化为下载未压缩原文件）。
+  // 在等 SW 接管的空档里并行把首屏分块拉下来：这两件事原本是串行的，
+  // 预热后可以做到「SW 生命周期」与「下载」重叠，script 一到就能直接从 SW 拿到。
+  function warm(){
+    var jobs=[];
+    for(var p in CHUNKS){ if(!Object.prototype.hasOwnProperty.call(CHUNKS,p)) continue;
+      for(var i=1;i<=CHUNKS[p];i++) jobs.push([p,i]); }
+    totalN=jobs.length;
+    if(!totalN) return Promise.resolve();
+    var idx=0;
+    function one(){
+      if(stop||idx>=jobs.length) return Promise.resolve();
+      var j=jobs[idx++], p=j[0], i=j[1];
+      var bu=chunkUrl(p,i,'.bin'), ju=chunkUrl(p,i,'.js');
+      return fetch(bu).then(function(r){ if(!r.ok) throw 0; return r.arrayBuffer(); })
+        .then(function(b){ prefetch[bu]=b; })
+        .catch(function(){
+          return fetch(ju).then(function(r){ if(!r.ok) throw 0; return r.arrayBuffer(); })
+            .then(function(b){ prefetch[ju]=b; });
+        })
+        .catch(function(){})
+        .then(function(){ doneN++; paint(Math.min(99,Math.round(doneN/totalN*100))); return one(); });
+    }
+    var ps=[];
+    for(var k=0;k<8&&k<totalN;k++) ps.push(one());
+    return Promise.all(ps);
+  }
+  function swReady(){
+    return Promise.race([
+      navigator.serviceWorker.ready,
+      new Promise(function(res){ setTimeout(res,3000); })
+    ]).catch(function(){});
+  }
   var done=false;
-  function finish(){ if(done) return; done=true; try{ navigator.serviceWorker.removeEventListener('controllerchange', onCtrl); }catch(e){} insertAll(); }
+  function finish(){
+    if(done) return;
+    done=true;
+    stop=true; // 停止预热，剩下的交给 SW，避免重复下载同一块
+    try{ navigator.serviceWorker.removeEventListener('controllerchange',onCtrl); }catch(e){}
+    insertAll();
+  }
+  var canSW=('serviceWorker' in navigator)&&(typeof DecompressionStream!=='undefined');
+  if(!canSW){ insertAll(); return; }
   function onCtrl(){ finish(); }
   if(navigator.serviceWorker.controller){ finish(); return; }
-  navigator.serviceWorker.addEventListener('controllerchange', onCtrl);
+  navigator.serviceWorker.addEventListener('controllerchange',onCtrl);
   navigator.serviceWorker.register('/sw.js').catch(function(){});
-  navigator.serviceWorker.ready.then(function(){ setTimeout(finish, 150); }).catch(function(){});
-  // 兜底放宽到 6s（原为 2s）：宁可多等 SW 接管，也不要退回去下载未压缩的原始大文件
-  setTimeout(finish, FALLBACK_MS);
+  Promise.all([swReady(),warm()]).then(function(){
+    var sw=navigator.serviceWorker.controller, n=0;
+    for(var k in prefetch){ if(Object.prototype.hasOwnProperty.call(prefetch,k)) n++; }
+    if(sw&&n){ try{ sw.postMessage({t:'prefetch',d:prefetch}); }catch(e){} }
+    prefetch={}; // 已移交，页面侧不再占着这几 MB
+    finish();
+  }).catch(function(){ finish(); });
+  setTimeout(function(){ stop=true; finish(); }, FALLBACK_MS);
 })();
 </script></head>
 
