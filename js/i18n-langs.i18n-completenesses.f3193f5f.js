@@ -1,2 +1,0 @@
-"use strict";(globalThis.rspackChunk_affine_monorepo=globalThis.rspackChunk_affine_monorepo||[]).push([[6105],{61780(a){a.exports=JSON.parse('{"ar":87,"ca":85,"da":3,"de":95,"el-GR":84,"en":100,"es-AR":84,"es-CL":85,"es":84,"fa":84,"fr":87,"hi":1,"it":85,"ja":84,"kk":90,"ko":84,"nb-NO":42,"pl":85,"pt-BR":84,"ru":86,"sv-SE":84,"tr":90,"uk":84,"ur":90,"zh-Hans":95,"zh-Hant":86}')}}]);
-//# sourceMappingURL=i18n-langs.i18n-completenesses.f3193f5f.js.map
