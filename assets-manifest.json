@@ -1,7 +1,7 @@
 {
   "publicPath": "/",
   "js": [
-    "js/runtime.e5fcd041.js",
+    "js/runtime.981b800f.js",
     "js/npm-rxjs.2a651a07.js",
     "js/i18n.eb5bc4b6.js",
     "js/i18n-langs.i18n-completenesses.f3193f5f.js",
@@ -10,11 +10,11 @@
     "js/npm-jotai.ff53f772.js",
     "js/npm-emotion.06ccdb5b.js",
     "js/vendor.44009b03.js",
-    "js/index.8a99a786.js"
+    "js/index.5ada452a.js"
   ],
   "css": [
     "styles.e73ab7b1.css",
-    "vendor.b804469a.css"
+    "vendor.3eb62135.css"
   ],
   "gitHash": "bf473eeb6",
   "description": "There can be more than Notion and Miro. AFFiNE is a next-gen knowledge base that brings planning, sorting and creating all together."
