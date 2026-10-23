@@ -13,11 +13,15 @@
 /* global self, caches, DecompressionStream, fetch, Request, Response, atob, Blob */
 'use strict';
 
-var CACHE = 'affine-gz-v114';
+var CACHE = 'affine-gz-v115';
 var COMPRESSIBLE = /\.(js|css)(\?.*)?$/i;
 var MAX_CHUNKS = 64;
 var CHUNK_B64 = 1200000; // 分块大小参考值（与 prepare_gzip.py 保持一致）
 var CHUNK_CONCURRENCY = 8; // 分块并发下载数（原来串行拉取，往返数是首屏最大瓶颈）
+// 停滞保护：主机/CDN 限流时连接会「建立成功但几乎不发数据」，导致分块请求永远挂着、
+// 页面 script 拿不到内容而白屏。任一块超过 STALL_MS 没收到新字节就中止并重试一次。
+var STALL_MS = 30000;
+var STALL_RETRY = 1;
 
 function mimeFor(pathname) {
   if (/\.js(\?.*)?$/i.test(pathname)) return 'application/javascript; charset=utf-8';
@@ -81,10 +85,12 @@ async function handle(req, url, event) {
     if (out) return out;
   }
   // 2. 并发拉取分块（pw-xxx.js.packed.1.js / .packed.2.js / ...），直到某块缺失为止
-  var parts = await fetchChunks(url);
-  if (!parts.length) {
-    return fetch(req); // 无分块：回退原文件
+  var chunked = await fetchChunks(url);
+  // 无分块 / 任一块下载停滞：回退原文件（至少浏览器原生下载不会永久挂死）
+  if (!chunked || chunked.errored || !chunked.parts.length) {
+    return fetch(req);
   }
+  var parts = chunked.parts;
   var bytes = base64ToBytes(parts.join(''));
   if (!bytes) {
     return fetch(req); // 内容异常：回退
@@ -131,29 +137,85 @@ async function gunzip(bytes) {
 }
 
 /**
- * 并发按序拉取某资源的所有分块。
- * 老实现是一次 await 一块（串行），大文件（如 12MB 的主 bundle 拆 4 块）
- * 就多花 4 个 RTT；这里按 CHUNK_CONCURRENCY 分批并发，再按序拼接。
+ * 带「停滞超时」的 fetch：只要 stallMs 内没有新字节到达就中止（可选重试 StallRetry 次）。
+ * 返回 { resp, errored } —— errored 为 true 表示这一步彻底失败（含停滞中止）。
+ * 注意：普通 fetch 在连接被限流时不会报错，只会一直挂着，所以必须用 reader 手动看数据。
  */
+async function fetchWithStall(url, stallMs, retries) {
+  for (var attempt = 0; attempt <= retries; attempt++) {
+    var ctrl = typeof AbortController !== 'undefined' ? new AbortController() : null;
+    var timer = null;
+    try {
+      var resp = await fetch(url, ctrl ? { signal: ctrl.signal } : undefined);
+      if (!resp) return { resp: null, errored: true };
+      if (!resp.ok) {
+        return { resp: resp, errored: false }; // 404 等正常语义：由调用方判定「没有更多分块」
+      }
+      if (!resp.body || typeof resp.body.getReader !== 'function') {
+        return { resp: resp, errored: false }; // 不支持流式读取：放弃停滞保护
+      }
+      var reader = resp.body.getReader();
+      var parts = [];
+      var settled = false;
+      function arm(ms) {
+        if (timer) clearTimeout(timer);
+        if (!ctrl) return;
+        timer = setTimeout(function () {
+          if (!settled) {
+            settled = true;
+            try {
+              ctrl.abort();
+            } catch (e) {}
+          }
+        }, ms);
+      }
+      arm(stallMs);
+      while (true) {
+        var r = await reader.read();
+        if (r.done) break;
+        if (r.value && r.value.length) parts.push(r.value);
+        arm(stallMs); // 有数据到达 → 重置停滞计时
+      }
+      settled = true;
+      if (timer) clearTimeout(timer);
+      return {
+        resp: new Response(new Blob(parts), {
+          status: 200,
+          headers: resp.headers,
+        }),
+        errored: false,
+      };
+    } catch (e) {
+      settled = true;
+      if (timer) clearTimeout(timer);
+      if (attempt >= retries) return { resp: null, errored: true };
+    }
+  }
+  return { resp: null, errored: true };
+}
 async function fetchChunks(url) {
   var parts = [];
+  var errored = false;
   var last = false;
   var i = 1;
   while (i <= MAX_CHUNKS && !last) {
     var upto = Math.min(MAX_CHUNKS, i + CHUNK_CONCURRENCY - 1);
     var batch = [];
     for (var k = i; k <= upto; k++) {
-      // 走默认缓存策略：允许复用页面预热分块时留下的 HTTP 缓存
-      batch.push(
-        fetch(chunkUrl(url, k)).catch(function () {
-          return null;
-        })
-      );
+      // 带停滞保护的并发拉取（原实现不设限，限流时会永久挂起）
+      batch.push(fetchWithStall(chunkUrl(url, k), STALL_MS, STALL_RETRY));
     }
     var resps = await Promise.all(batch);
     for (var m = 0; m < resps.length; m++) {
-      var resp = resps[m];
+      var out = resps[m];
       var idx = i + m;
+      if (out.errored) {
+        // 停滞/网络失败：整个资源不可用（分块是左到右切开的，缺一块即损坏）
+        errored = true;
+        last = true;
+        break;
+      }
+      var resp = out.resp;
       if (!resp || !resp.ok) {
         last = true;
         break;
@@ -172,7 +234,7 @@ async function fetchChunks(url) {
     }
     i = upto + 1;
   }
-  return parts;
+  return { parts: parts, errored: errored };
 }
 
 /**
