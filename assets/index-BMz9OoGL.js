@@ -2944,7 +2944,7 @@ html[data-theme="light"] .lp2-trans:hover { background: rgba(15, 23, 42, 0.09); 
   overflow: visible;
   flex-wrap: wrap; /* 内容区被侧边栏压窄时自动换行，避免横向滚动条 */
   row-gap: 24px;
-  gap: clamp(24px, 4.5vw, 120px); /* 随视口收缩，保证三个文件夹始终放得下 */
+  gap: clamp(48px, 7.5vw, 150px); /* 随视口收缩，保证三个文件夹始终放得下 */
   padding: 0 110px; /* 两侧对称留白：hint/箭头伸出卡片外，防止被右边缘裁掉显得不居中 */
   box-sizing: border-box;
 }
@@ -2979,28 +2979,34 @@ html[data-theme="light"] .lp2-trans:hover { background: rgba(15, 23, 42, 0.09); 
 
 /* 断点按「内容区宽度 = 视口 - 264(侧边栏)」折算，原 1200 断点右移 */
 @media (max-width: 1464px) {
+  /* 用户要求「左右间距大一点」：gap 48→clamp(72,8vw,120)，
+     同时把 stage 侧留白 110→72、item 侧 padding 40→24 省出的宽度
+     全部换成文件夹之间的间距（净间距 128→160+）。
+     总宽 510+144+2G+144，视口 1330 + 侧边栏（内容 1066）时仍剩 ~55px 不换行 */
   .pf-stage {
-    gap: 48px;
+    gap: clamp(72px, 8vw, 120px);
+    padding: 0 72px;
   }
   .pf-item {
-    padding: 70px 40px 30px;
+    padding: 70px 24px 30px;
   }
 }
 
 /* 平板（侧边栏可见，961~1329px）：强制三个文件夹同一行。
    关键：用 zoom 真实缩小布局占位（transform:scale 只缩视觉不缩布局，
-   布局盒仍是 170px 导致平板内容区算不下就换行） */
+   布局盒仍是 170px 导致平板内容区算不下就换行）。
+   只做轻微缩放（0.92）并把省下的空间换成更大的间距，避免卡片缩太小。 */
 @media (min-width: 961px) and (max-width: 1329px) {
   .pf-stage {
     flex-wrap: nowrap;
-    gap: clamp(20px, 3.5vw, 80px);
+    gap: clamp(36px, 4.2vw, 92px);
     padding: 0 48px;
   }
   .pf-item {
     padding: 70px 8px 30px;
   }
   .folder-card {
-    zoom: 0.86;
+    zoom: 0.92;
   }
 }
 
