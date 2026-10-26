@@ -1,1 +1,89 @@
-aW1wb3J0IHsKICBmaW5kRnV6enlNYXRjaGVzLAogIGZpbmROZWFyYnlNYXRjaGVzLAogIHNlZ21lbnROZWFyYnlXb3JkcywKfSBmcm9tICcuL2xpYnJhcnktc2VhcmNoLWFsZ29yaXRobXMuanMnOwoKY29uc3QgTUFYX0NBQ0hFX0JZVEVTID0gMTYgKiAxMDI0ICogMTAyNDsKY29uc3QgTUFYX0NBQ0hFX1NFQ1RJT05TID0gMjU2Owpjb25zdCBzZWN0aW9ucyA9IG5ldyBNYXAoKTsKbGV0IGNhY2hlZEJ5dGVzID0gMDsKCmNvbnN0IHRyaW1DYWNoZSA9ICgpID0+IHsKICB3aGlsZSAoCiAgICBzZWN0aW9ucy5zaXplID4gTUFYX0NBQ0hFX1NFQ1RJT05TIHx8CiAgICAoc2VjdGlvbnMuc2l6ZSA+IDAgJiYgY2FjaGVkQnl0ZXMgPiBNQVhfQ0FDSEVfQllURVMpCiAgKSB7CiAgICBjb25zdCBvbGRlc3RLZXkgPSBzZWN0aW9ucy5rZXlzKCkubmV4dCgpLnZhbHVlOwogICAgY2FjaGVkQnl0ZXMgLT0gc2VjdGlvbnMuZ2V0KG9sZGVzdEtleSkuYnl0ZXM7CiAgICBzZWN0aW9ucy5kZWxldGUob2xkZXN0S2V5KTsKICB9Cn07Cgpjb25zdCBnZXRTZWN0aW9uID0gKGtleSwgdGV4dCkgPT4gewogIGNvbnN0IGV4aXN0aW5nID0gc2VjdGlvbnMuZ2V0KGtleSk7CiAgaWYgKGV4aXN0aW5nPy50ZXh0ID09PSB0ZXh0KSB7CiAgICBzZWN0aW9ucy5kZWxldGUoa2V5KTsKICAgIHNlY3Rpb25zLnNldChrZXksIGV4aXN0aW5nKTsKICAgIHJldHVybiBleGlzdGluZzsKICB9CiAgaWYgKGV4aXN0aW5nKSB7CiAgICBjYWNoZWRCeXRlcyAtPSBleGlzdGluZy5ieXRlczsKICAgIHNlY3Rpb25zLmRlbGV0ZShrZXkpOwogIH0KCiAgY29uc3Qgc2VjdGlvbiA9IHsgdGV4dCwgYnl0ZXM6IHRleHQubGVuZ3RoICogMiwgd29yZHM6IG5ldyBNYXAoKSB9OwogIGlmIChzZWN0aW9uLmJ5dGVzIDw9IE1BWF9DQUNIRV9CWVRFUykgewogICAgc2VjdGlvbnMuc2V0KGtleSwgc2VjdGlvbik7CiAgICBjYWNoZWRCeXRlcyArPSBzZWN0aW9uLmJ5dGVzOwogICAgdHJpbUNhY2hlKCk7CiAgfQogIHJldHVybiBzZWN0aW9uOwp9OwoKc2VsZi5vbm1lc3NhZ2UgPSAoZXZlbnQpID0+IHsKICBpZiAoZXZlbnQuZGF0YS50eXBlICE9PSAnc2VhcmNoJykgcmV0dXJuOwogIGNvbnN0IHsgaWQsIHNlY3Rpb25LZXksIHRleHQsIHF1ZXJ5LCBtb2RlLCBmdXp6eU9wdGlvbnMsIG5lYXJieU9wdGlvbnMsIGxpbWl0IH0gPQogICAgZXZlbnQuZGF0YS5wYXlsb2FkOwogIHRyeSB7CiAgICBjb25zdCBzZWN0aW9uID0gZ2V0U2VjdGlvbihzZWN0aW9uS2V5LCB0ZXh0KTsKICAgIGNvbnN0IHN0YXRlID0ge307CiAgICBjb25zdCBtYXRjaGVzID0KICAgICAgbW9kZSA9PT0gJ2Z1enp5JwogICAgICAgID8gZmluZEZ1enp5TWF0Y2hlcyhzZWN0aW9uLnRleHQsIHF1ZXJ5LCBmdXp6eU9wdGlvbnMsIGxpbWl0LCBzdGF0ZSkKICAgICAgICA6IGZpbmROZWFyYnlNYXRjaGVzKAogICAgICAgICAgICBzZWN0aW9uLnRleHQsCiAgICAgICAgICAgIHF1ZXJ5LAogICAgICAgICAgICBuZWFyYnlPcHRpb25zLAogICAgICAgICAgICAoKCkgPT4gewogICAgICAgICAgICAgIGNvbnN0IGxvY2FsZSA9IG5lYXJieU9wdGlvbnMubG9jYWxlID8/ICdlbic7CiAgICAgICAgICAgICAgY29uc3QgZXhpc3RpbmcgPSBzZWN0aW9uLndvcmRzLmdldChsb2NhbGUpOwogICAgICAgICAgICAgIGlmIChleGlzdGluZykgcmV0dXJuIGV4aXN0aW5nOwogICAgICAgICAgICAgIGNvbnN0IHdvcmRzID0gc2VnbWVudE5lYXJieVdvcmRzKHNlY3Rpb24udGV4dCwgbG9jYWxlKTsKICAgICAgICAgICAgICBzZWN0aW9uLndvcmRzLnNldChsb2NhbGUsIHdvcmRzKTsKICAgICAgICAgICAgICBpZiAoc2VjdGlvbnMuZ2V0KHNlY3Rpb25LZXkpID09PSBzZWN0aW9uKSB7CiAgICAgICAgICAgICAgICBjb25zdCB3b3JkQnl0ZXMgPSB3b3Jkcy5yZWR1Y2UoCiAgICAgICAgICAgICAgICAgIChieXRlcywgd29yZCkgPT4gYnl0ZXMgKyB3b3JkLnRleHQubGVuZ3RoICogMiArIDMyLAogICAgICAgICAgICAgICAgICAwLAogICAgICAgICAgICAgICAgKTsKICAgICAgICAgICAgICAgIHNlY3Rpb24uYnl0ZXMgKz0gd29yZEJ5dGVzOwogICAgICAgICAgICAgICAgY2FjaGVkQnl0ZXMgKz0gd29yZEJ5dGVzOwogICAgICAgICAgICAgICAgc2VjdGlvbnMuZGVsZXRlKHNlY3Rpb25LZXkpOwogICAgICAgICAgICAgICAgc2VjdGlvbnMuc2V0KHNlY3Rpb25LZXksIHNlY3Rpb24pOwogICAgICAgICAgICAgICAgdHJpbUNhY2hlKCk7CiAgICAgICAgICAgICAgfQogICAgICAgICAgICAgIHJldHVybiB3b3JkczsKICAgICAgICAgICAgfSkoKSwKICAgICAgICAgICAgbGltaXQsCiAgICAgICAgICAgIHN0YXRlLAogICAgICAgICAgKTsKICAgIHNlbGYucG9zdE1lc3NhZ2UoeyB0eXBlOiAnc3VjY2VzcycsIGlkLCBtYXRjaGVzLCB0cnVuY2F0ZWQ6IEJvb2xlYW4oc3RhdGUudHJ1bmNhdGVkKSB9KTsKICB9IGNhdGNoIChlcnJvcikgewogICAgc2VsZi5wb3N0TWVzc2FnZSh7CiAgICAgIHR5cGU6ICdlcnJvcicsCiAgICAgIGlkLAogICAgICBtZXNzYWdlOiBlcnJvciBpbnN0YW5jZW9mIEVycm9yID8gZXJyb3IubWVzc2FnZSA6IFN0cmluZyhlcnJvciksCiAgICAgIC4uLihlcnJvcj8uY29kZSA/IHsgY29kZTogZXJyb3IuY29kZSB9IDoge30pLAogICAgfSk7CiAgfQp9Owo=
+import {
+  findFuzzyMatches,
+  findNearbyMatches,
+  segmentNearbyWords,
+} from './library-search-algorithms.js';
+
+const MAX_CACHE_BYTES = 16 * 1024 * 1024;
+const MAX_CACHE_SECTIONS = 256;
+const sections = new Map();
+let cachedBytes = 0;
+
+const trimCache = () => {
+  while (
+    sections.size > MAX_CACHE_SECTIONS ||
+    (sections.size > 0 && cachedBytes > MAX_CACHE_BYTES)
+  ) {
+    const oldestKey = sections.keys().next().value;
+    cachedBytes -= sections.get(oldestKey).bytes;
+    sections.delete(oldestKey);
+  }
+};
+
+const getSection = (key, text) => {
+  const existing = sections.get(key);
+  if (existing?.text === text) {
+    sections.delete(key);
+    sections.set(key, existing);
+    return existing;
+  }
+  if (existing) {
+    cachedBytes -= existing.bytes;
+    sections.delete(key);
+  }
+
+  const section = { text, bytes: text.length * 2, words: new Map() };
+  if (section.bytes <= MAX_CACHE_BYTES) {
+    sections.set(key, section);
+    cachedBytes += section.bytes;
+    trimCache();
+  }
+  return section;
+};
+
+self.onmessage = (event) => {
+  if (event.data.type !== 'search') return;
+  const { id, sectionKey, text, query, mode, fuzzyOptions, nearbyOptions, limit } =
+    event.data.payload;
+  try {
+    const section = getSection(sectionKey, text);
+    const state = {};
+    const matches =
+      mode === 'fuzzy'
+        ? findFuzzyMatches(section.text, query, fuzzyOptions, limit, state)
+        : findNearbyMatches(
+            section.text,
+            query,
+            nearbyOptions,
+            (() => {
+              const locale = nearbyOptions.locale ?? 'en';
+              const existing = section.words.get(locale);
+              if (existing) return existing;
+              const words = segmentNearbyWords(section.text, locale);
+              section.words.set(locale, words);
+              if (sections.get(sectionKey) === section) {
+                const wordBytes = words.reduce(
+                  (bytes, word) => bytes + word.text.length * 2 + 32,
+                  0,
+                );
+                section.bytes += wordBytes;
+                cachedBytes += wordBytes;
+                sections.delete(sectionKey);
+                sections.set(sectionKey, section);
+                trimCache();
+              }
+              return words;
+            })(),
+            limit,
+            state,
+          );
+    self.postMessage({ type: 'success', id, matches, truncated: Boolean(state.truncated) });
+  } catch (error) {
+    self.postMessage({
+      type: 'error',
+      id,
+      message: error instanceof Error ? error.message : String(error),
+      ...(error?.code ? { code: error.code } : {}),
+    });
+  }
+};
