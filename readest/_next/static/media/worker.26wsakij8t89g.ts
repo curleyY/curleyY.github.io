@@ -1,1 +1,9 @@
-aW1wb3J0IHsKICBzdGFydFBsdWdpbldvcmtlclNlcnZlciwKICB0eXBlIFBsdWdpbldvcmtlckdsb2JhbExpa2UsCn0gZnJvbSAnQC9zZXJ2aWNlcy9wbHVnaW5zL3dvcmtlclNlcnZlcic7CmltcG9ydCB7IHlvbWl0YW5PcGVyYXRpb25IYW5kbGVycyB9IGZyb20gJy4vaGFuZGxlcnMnOwoKY29uc3Qgd29ya2VyU2NvcGU6IFBsdWdpbldvcmtlckdsb2JhbExpa2UgPSBzZWxmIGFzIHVua25vd24gYXMgRGVkaWNhdGVkV29ya2VyR2xvYmFsU2NvcGU7CgpzdGFydFBsdWdpbldvcmtlclNlcnZlcih3b3JrZXJTY29wZSwgeW9taXRhbk9wZXJhdGlvbkhhbmRsZXJzKTsK
+import {
+  startPluginWorkerServer,
+  type PluginWorkerGlobalLike,
+} from '@/services/plugins/workerServer';
+import { yomitanOperationHandlers } from './handlers';
+
+const workerScope: PluginWorkerGlobalLike = self as unknown as DedicatedWorkerGlobalScope;
+
+startPluginWorkerServer(workerScope, yomitanOperationHandlers);

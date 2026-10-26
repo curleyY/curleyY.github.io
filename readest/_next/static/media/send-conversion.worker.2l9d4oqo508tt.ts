@@ -1,1 +1,38 @@
-aW1wb3J0IHsgY29udmVydFRvRXB1YiB9IGZyb20gJy4uL3NlcnZpY2VzL3NlbmQvY29udmVyc2lvbi9jb252ZXJ0VG9FcHViJzsKaW1wb3J0IHsgQ29udmVyc2lvbkVycm9yIH0gZnJvbSAnLi4vc2VydmljZXMvc2VuZC9jb252ZXJzaW9uL3R5cGVzJzsKaW1wb3J0IHsKICBDb252ZXJzaW9uV29ya2VyUmVxdWVzdCwKICBDb252ZXJzaW9uV29ya2VyUmVzcG9uc2UsCn0gZnJvbSAnLi4vc2VydmljZXMvc2VuZC9jb252ZXJzaW9uL2NvbnZlcnNpb24td29ya2VyLXByb3RvY29sJzsKCi8vIERvY3VtZW50IGNvbnZlcnNpb24gKG1hbW1vdGggRE9DWCBwYXJzaW5nLCBSZWFkYWJpbGl0eSwgRVBVQiB6aXAgYXNzZW1ibHkpIGlzCi8vIENQVS1oZWF2eTsgcnVubmluZyBpdCBoZXJlIGtlZXBzIHRoZSBVSSB0aHJlYWQgcmVzcG9uc2l2ZS4KY29uc3Qgd29ya2VyQ29udGV4dDogRGVkaWNhdGVkV29ya2VyR2xvYmFsU2NvcGUgPSBzZWxmIGFzIHVua25vd24gYXMgRGVkaWNhdGVkV29ya2VyR2xvYmFsU2NvcGU7Cgp3b3JrZXJDb250ZXh0Lm9ubWVzc2FnZSA9IGFzeW5jIChldmVudDogTWVzc2FnZUV2ZW50PENvbnZlcnNpb25Xb3JrZXJSZXF1ZXN0PikgPT4gewogIGlmIChldmVudC5kYXRhLnR5cGUgIT09ICdjb252ZXJ0JykgcmV0dXJuOwoKICB0cnkgewogICAgY29uc3QgYm9vayA9IGF3YWl0IGNvbnZlcnRUb0VwdWIoZXZlbnQuZGF0YS5wYXlsb2FkKTsKICAgIGNvbnN0IGVwdWJCdWZmZXIgPSBhd2FpdCBib29rLmZpbGUuYXJyYXlCdWZmZXIoKTsKICAgIGNvbnN0IHJlc3BvbnNlOiBDb252ZXJzaW9uV29ya2VyUmVzcG9uc2UgPSB7CiAgICAgIHR5cGU6ICdzdWNjZXNzJywKICAgICAgcGF5bG9hZDogewogICAgICAgIGVwdWJCdWZmZXIsCiAgICAgICAgbmFtZTogYm9vay5maWxlLm5hbWUsCiAgICAgICAgdGl0bGU6IGJvb2sudGl0bGUsCiAgICAgICAgYXV0aG9yOiBib29rLmF1dGhvciwKICAgICAgfSwKICAgIH07CiAgICB3b3JrZXJDb250ZXh0LnBvc3RNZXNzYWdlKHJlc3BvbnNlLCBbZXB1YkJ1ZmZlcl0pOwogIH0gY2F0Y2ggKGVycm9yKSB7CiAgICBjb25zdCByZXNwb25zZTogQ29udmVyc2lvbldvcmtlclJlc3BvbnNlID0gewogICAgICB0eXBlOiAnZXJyb3InLAogICAgICBwYXlsb2FkOiB7CiAgICAgICAgbWVzc2FnZTogZXJyb3IgaW5zdGFuY2VvZiBFcnJvciA/IGVycm9yLm1lc3NhZ2UgOiBTdHJpbmcoZXJyb3IpLAogICAgICAgIGNvZGU6IGVycm9yIGluc3RhbmNlb2YgQ29udmVyc2lvbkVycm9yID8gZXJyb3IuY29kZSA6IHVuZGVmaW5lZCwKICAgICAgfSwKICAgIH07CiAgICB3b3JrZXJDb250ZXh0LnBvc3RNZXNzYWdlKHJlc3BvbnNlKTsKICB9Cn07Cg==
+import { convertToEpub } from '../services/send/conversion/convertToEpub';
+import { ConversionError } from '../services/send/conversion/types';
+import {
+  ConversionWorkerRequest,
+  ConversionWorkerResponse,
+} from '../services/send/conversion/conversion-worker-protocol';
+
+// Document conversion (mammoth DOCX parsing, Readability, EPUB zip assembly) is
+// CPU-heavy; running it here keeps the UI thread responsive.
+const workerContext: DedicatedWorkerGlobalScope = self as unknown as DedicatedWorkerGlobalScope;
+
+workerContext.onmessage = async (event: MessageEvent<ConversionWorkerRequest>) => {
+  if (event.data.type !== 'convert') return;
+
+  try {
+    const book = await convertToEpub(event.data.payload);
+    const epubBuffer = await book.file.arrayBuffer();
+    const response: ConversionWorkerResponse = {
+      type: 'success',
+      payload: {
+        epubBuffer,
+        name: book.file.name,
+        title: book.title,
+        author: book.author,
+      },
+    };
+    workerContext.postMessage(response, [epubBuffer]);
+  } catch (error) {
+    const response: ConversionWorkerResponse = {
+      type: 'error',
+      payload: {
+        message: error instanceof Error ? error.message : String(error),
+        code: error instanceof ConversionError ? error.code : undefined,
+      },
+    };
+    workerContext.postMessage(response);
+  }
+};

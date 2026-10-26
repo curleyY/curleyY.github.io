@@ -1,1 +1,16 @@
-X190dXJib3BhY2tfbG9hZF9wYWdlX2NodW5rc19fKCIvcmVhZGVyL1tpZHNdIiwgWwogICJzdGF0aWMvY2h1bmtzLzNsc29qZG9udHo0cHYuanMiLAogICJzdGF0aWMvY2h1bmtzLzJfOWZjc2pfN2NnMHYuanMiLAogICJzdGF0aWMvY2h1bmtzLzQzZ24xdWU3MDR5NzkuanMiLAogICJzdGF0aWMvY2h1bmtzLzNmcGcwcXd5c2pibWMuanMiLAogICJzdGF0aWMvY2h1bmtzLzEzMXNjbnZqMmJiN2guanMiLAogICJzdGF0aWMvY2h1bmtzLzF4el9hc3RnLXhlbzIuanMiLAogICJzdGF0aWMvY2h1bmtzLzQwbTZqbjVpdHBoaF8uanMiLAogICJzdGF0aWMvY2h1bmtzLzJxdHIwcW5vbHA1MXUuanMiLAogICJzdGF0aWMvY2h1bmtzLzFmZ2dpMm4tZW1mX2wuanMiLAogICJzdGF0aWMvY2h1bmtzLzFheTB2ZmNfdmdwdzUuanMiLAogICJzdGF0aWMvY2h1bmtzLzJ6cnJzemJpcmZzOTAuanMiLAogICJzdGF0aWMvY2h1bmtzLzM3aTI5dXhpOXdpcDUuanMiLAogICJzdGF0aWMvY2h1bmtzLzN5eTd0bTJpcDE1c2EuY3NzIiwKICAic3RhdGljL2NodW5rcy90dXJib3BhY2stMDJhNy11aHAwXzV0cC5qcyIKXSkK
+__turbopack_load_page_chunks__("/reader/[ids]", [
+  "static/chunks/3lsojdontz4pv.js",
+  "static/chunks/2_9fcsj_7cg0v.js",
+  "static/chunks/43gn1ue704y79.js",
+  "static/chunks/3fpg0qwysjbmc.js",
+  "static/chunks/131scnvj2bb7h.js",
+  "static/chunks/1xz_astg-xeo2.js",
+  "static/chunks/40m6jn5itphh_.js",
+  "static/chunks/2qtr0qnolp51u.js",
+  "static/chunks/1fggi2n-emf_l.js",
+  "static/chunks/1ay0vfc_vgpw5.js",
+  "static/chunks/2zrrszbirfs90.js",
+  "static/chunks/37i29uxi9wip5.js",
+  "static/chunks/3yy7tm2ip15sa.css",
+  "static/chunks/turbopack-02a7-uhp0_5tp.js"
+])
