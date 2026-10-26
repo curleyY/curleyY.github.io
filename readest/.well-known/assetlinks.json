@@ -1,1 +1,16 @@
-WwogIHsKICAgICJyZWxhdGlvbiI6IFsKICAgICAgImRlbGVnYXRlX3Blcm1pc3Npb24vY29tbW9uLmhhbmRsZV9hbGxfdXJscyIsCiAgICAgICJkZWxlZ2F0ZV9wZXJtaXNzaW9uL2NvbW1vbi5nZXRfbG9naW5fY3JlZHMiCiAgICBdLAogICAgInRhcmdldCI6IHsKICAgICAgIm5hbWVzcGFjZSI6ICJhbmRyb2lkX2FwcCIsCiAgICAgICJwYWNrYWdlX25hbWUiOiAiY29tLmJpbGluZ2lmeS5yZWFkZXN0IiwKICAgICAgInNoYTI1Nl9jZXJ0X2ZpbmdlcnByaW50cyI6IFsKICAgICAgICAiNjU6MkQ6MTE6Njc6NzY6MTI6Mjk6MTQ6MTg6NDI6Q0I6M0Q6MTg6NTA6QjY6RTQ6N0U6NDY6RTE6MkY6NEI6RTQ6N0Y6NUE6NkM6MTQ6QjY6RDc6MTI6NzQ6MUU6ODIiLAogICAgICAgICJFMDpFNzo2MDo1NTo4MDo4RDozQTpERTpBMDpEMTpDRjo3QzoyMDo4NTo0MDpBMzpERDo0QjpFNjo0RDoxNzo1QzowRjpERToyNjo1Nzo3RDo5Qzo1QjoyOTo1Rjo1MSIKICAgICAgXQogICAgfQogIH0KXQo=
+[
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls",
+      "delegate_permission/common.get_login_creds"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.bilingify.readest",
+      "sha256_cert_fingerprints": [
+        "65:2D:11:67:76:12:29:14:18:42:CB:3D:18:50:B6:E4:7E:46:E1:2F:4B:E4:7F:5A:6C:14:B6:D7:12:74:1E:82",
+        "E0:E7:60:55:80:8D:3A:DE:A0:D1:CF:7C:20:85:40:A3:DD:4B:E6:4D:17:5C:0F:DE:26:57:7D:9C:5B:29:5F:51"
+      ]
+    }
+  }
+]
