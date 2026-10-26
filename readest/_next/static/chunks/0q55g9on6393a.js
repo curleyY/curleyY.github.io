@@ -1,1 +1,3 @@
-KGdsb2JhbFRoaXMuVFVSQk9QQUNLfHwoZ2xvYmFsVGhpcy5UVVJCT1BBQ0s9W10pKS5wdXNoKFsib2JqZWN0Ij09dHlwZW9mIGRvY3VtZW50P2RvY3VtZW50LmN1cnJlbnRTY3JpcHQ6dm9pZCAwLDY0NTYzNSxlPT57InVzZSBzdHJpY3QiO3ZhciBpPWUuaSgyMTg0ODYpO2FzeW5jIGZ1bmN0aW9uIHQoZSx0KXthd2FpdCAoMCxpLmludm9rZSkoInBsdWdpbjpzaGFyZWtpdHxzaGFyZV90ZXh0Iix7dGV4dDplLC4uLnR9KX1hc3luYyBmdW5jdGlvbiBhKGUsdCl7YXdhaXQgKDAsaS5pbnZva2UpKCJwbHVnaW46c2hhcmVraXR8c2hhcmVfZmlsZSIse3VybDplLC4uLnR9KX1lLnMoWyJzaGFyZUZpbGUiLDAsYSwic2hhcmVUZXh0IiwwLHRdKX1dKTsKCi8vIyBzb3VyY2VNYXBwaW5nVVJMPTI5LXI2OWItYTIwNTEuanMubWFw
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,645635,e=>{"use strict";var i=e.i(218486);async function t(e,t){await (0,i.invoke)("plugin:sharekit|share_text",{text:e,...t})}async function a(e,t){await (0,i.invoke)("plugin:sharekit|share_file",{url:e,...t})}e.s(["shareFile",0,a,"shareText",0,t])}]);
+
+//# sourceMappingURL=29-r69b-a2051.js.map
