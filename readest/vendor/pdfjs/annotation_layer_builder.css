@@ -1,1 +1,399 @@
-LyogQ29weXJpZ2h0IDIwMTQgTW96aWxsYSBGb3VuZGF0aW9uCiAqCiAqIExpY2Vuc2VkIHVuZGVyIHRoZSBBcGFjaGUgTGljZW5zZSwgVmVyc2lvbiAyLjAgKHRoZSAiTGljZW5zZSIpOwogKiB5b3UgbWF5IG5vdCB1c2UgdGhpcyBmaWxlIGV4Y2VwdCBpbiBjb21wbGlhbmNlIHdpdGggdGhlIExpY2Vuc2UuCiAqIFlvdSBtYXkgb2J0YWluIGEgY29weSBvZiB0aGUgTGljZW5zZSBhdAogKgogKiAgICAgaHR0cDovL3d3dy5hcGFjaGUub3JnL2xpY2Vuc2VzL0xJQ0VOU0UtMi4wCiAqCiAqIFVubGVzcyByZXF1aXJlZCBieSBhcHBsaWNhYmxlIGxhdyBvciBhZ3JlZWQgdG8gaW4gd3JpdGluZywgc29mdHdhcmUKICogZGlzdHJpYnV0ZWQgdW5kZXIgdGhlIExpY2Vuc2UgaXMgZGlzdHJpYnV0ZWQgb24gYW4gIkFTIElTIiBCQVNJUywKICogV0lUSE9VVCBXQVJSQU5USUVTIE9SIENPTkRJVElPTlMgT0YgQU5ZIEtJTkQsIGVpdGhlciBleHByZXNzIG9yIGltcGxpZWQuCiAqIFNlZSB0aGUgTGljZW5zZSBmb3IgdGhlIHNwZWNpZmljIGxhbmd1YWdlIGdvdmVybmluZyBwZXJtaXNzaW9ucyBhbmQKICogbGltaXRhdGlvbnMgdW5kZXIgdGhlIExpY2Vuc2UuCiAqLwoKLmFubm90YXRpb25MYXllciB7CiAgY29sb3Itc2NoZW1lOiBvbmx5IGxpZ2h0OwoKICAtLWFubm90YXRpb24tdW5mb2N1c2VkLWZpZWxkLWJhY2tncm91bmQ6IHVybCgiZGF0YTppbWFnZS9zdmcreG1sO2NoYXJzZXQ9VVRGLTgsPHN2ZyB3aWR0aD0nMXB4JyBoZWlnaHQ9JzFweCcgeG1sbnM9J2h0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnJz48cmVjdCB3aWR0aD0nMTAwJScgaGVpZ2h0PScxMDAlJyBzdHlsZT0nZmlsbDpyZ2JhKDAsIDU0LCAyNTUsIDAuMTMpOycvPjwvc3ZnPiIpOwogIC0taW5wdXQtZm9jdXMtYm9yZGVyLWNvbG9yOiBIaWdobGlnaHQ7CiAgLS1pbnB1dC1mb2N1cy1vdXRsaW5lOiAxcHggc29saWQgQ2FudmFzOwogIC0taW5wdXQtdW5mb2N1c2VkLWJvcmRlci1jb2xvcjogdHJhbnNwYXJlbnQ7CiAgLS1pbnB1dC1kaXNhYmxlZC1ib3JkZXItY29sb3I6IHRyYW5zcGFyZW50OwogIC0taW5wdXQtaG92ZXItYm9yZGVyLWNvbG9yOiBibGFjazsKICAtLWxpbmstb3V0bGluZTogbm9uZTsKfQoKQG1lZGlhIHNjcmVlbiBhbmQgKGZvcmNlZC1jb2xvcnM6IGFjdGl2ZSkgewoKLmFubm90YXRpb25MYXllciB7CiAgICAtLWlucHV0LWZvY3VzLWJvcmRlci1jb2xvcjogQ2FudmFzVGV4dDsKICAgIC0taW5wdXQtdW5mb2N1c2VkLWJvcmRlci1jb2xvcjogQWN0aXZlVGV4dDsKICAgIC0taW5wdXQtZGlzYWJsZWQtYm9yZGVyLWNvbG9yOiBHcmF5VGV4dDsKICAgIC0taW5wdXQtaG92ZXItYm9yZGVyLWNvbG9yOiBIaWdobGlnaHQ7CiAgICAtLWxpbmstb3V0bGluZTogMS41cHggc29saWQgTGlua1RleHQKfQoKICAgIC5hbm5vdGF0aW9uTGF5ZXIgLnRleHRXaWRnZXRBbm5vdGF0aW9uIDppcyhpbnB1dCwgdGV4dGFyZWEpOnJlcXVpcmVkLCAuYW5ub3RhdGlvbkxheWVyIC5jaG9pY2VXaWRnZXRBbm5vdGF0aW9uIHNlbGVjdDpyZXF1aXJlZCwgLmFubm90YXRpb25MYXllciAuYnV0dG9uV2lkZ2V0QW5ub3RhdGlvbjppcyguY2hlY2tCb3gsIC5yYWRpb0J1dHRvbikgaW5wdXQ6cmVxdWlyZWQgewogICAgICBvdXRsaW5lOiAxLjVweCBzb2xpZCBzZWxlY3RlZEl0ZW07CiAgICB9CgogICAgLmFubm90YXRpb25MYXllciAubGlua0Fubm90YXRpb24gewogICAgICBvdXRsaW5lOiB2YXIoLS1saW5rLW91dGxpbmUpOwogICAgfQoKICAgICAgLmFubm90YXRpb25MYXllciAubGlua0Fubm90YXRpb246aG92ZXIgewogICAgICAgIGJhY2tkcm9wLWZpbHRlcjogdmFyKC0taGNtLWhpZ2hsaWdodC1maWx0ZXIpOwogICAgICB9CgogICAgICAuYW5ub3RhdGlvbkxheWVyIC5saW5rQW5ub3RhdGlvbiA+IGE6aG92ZXIgewogICAgICAgIG9wYWNpdHk6IDAgIWltcG9ydGFudDsKICAgICAgICBiYWNrZ3JvdW5kOiBub25lICFpbXBvcnRhbnQ7CiAgICAgICAgYm94LXNoYWRvdzogbm9uZTsKICAgICAgfQoKICAgIC5hbm5vdGF0aW9uTGF5ZXIgLnBvcHVwQW5ub3RhdGlvbiAucG9wdXAgewogICAgICBvdXRsaW5lOiBjYWxjKDEuNXB4ICogdmFyKC0tdG90YWwtc2NhbGUtZmFjdG9yKSkgc29saWQgQ2FudmFzVGV4dCAhaW1wb3J0YW50OwogICAgICBiYWNrZ3JvdW5kLWNvbG9yOiBCdXR0b25GYWNlICFpbXBvcnRhbnQ7CiAgICAgIGNvbG9yOiBCdXR0b25UZXh0ICFpbXBvcnRhbnQ7CiAgICB9CgogICAgLmFubm90YXRpb25MYXllciAuaGlnaGxpZ2h0QXJlYTpob3Zlcjo6YWZ0ZXIgewogICAgICBwb3NpdGlvbjogYWJzb2x1dGU7CiAgICAgIHRvcDogMDsKICAgICAgbGVmdDogMDsKICAgICAgd2lkdGg6IDEwMCU7CiAgICAgIGhlaWdodDogMTAwJTsKICAgICAgYmFja2Ryb3AtZmlsdGVyOiB2YXIoLS1oY20taGlnaGxpZ2h0LWZpbHRlcik7CiAgICAgIGNvbnRlbnQ6ICIiOwogICAgICBwb2ludGVyLWV2ZW50czogbm9uZTsKICAgIH0KCiAgICAuYW5ub3RhdGlvbkxheWVyIC5wb3B1cEFubm90YXRpb24uZm9jdXNlZCAucG9wdXAgewogICAgICBvdXRsaW5lOiBjYWxjKDNweCAqIHZhcigtLXRvdGFsLXNjYWxlLWZhY3RvcikpIHNvbGlkIEhpZ2hsaWdodCAhaW1wb3J0YW50OwogICAgfQogIH0KCi5hbm5vdGF0aW9uTGF5ZXIgewoKICBwb3NpdGlvbjogYWJzb2x1dGU7CiAgdG9wOiAwOwogIGxlZnQ6IDA7CiAgcG9pbnRlci1ldmVudHM6IG5vbmU7CiAgdHJhbnNmb3JtLW9yaWdpbjogMCAwOwp9CgouYW5ub3RhdGlvbkxheWVyW2RhdGEtbWFpbi1yb3RhdGlvbj0iOTAiXSAubm9yb3RhdGUgewogICAgdHJhbnNmb3JtOiByb3RhdGUoMjcwZGVnKSB0cmFuc2xhdGVYKC0xMDAlKTsKICB9CgouYW5ub3RhdGlvbkxheWVyW2RhdGEtbWFpbi1yb3RhdGlvbj0iMTgwIl0gLm5vcm90YXRlIHsKICAgIHRyYW5zZm9ybTogcm90YXRlKDE4MGRlZykgdHJhbnNsYXRlKC0xMDAlLCAtMTAwJSk7CiAgfQoKLmFubm90YXRpb25MYXllcltkYXRhLW1haW4tcm90YXRpb249IjI3MCJdIC5ub3JvdGF0ZSB7CiAgICB0cmFuc2Zvcm06IHJvdGF0ZSg5MGRlZykgdHJhbnNsYXRlWSgtMTAwJSk7CiAgfQoKLmFubm90YXRpb25MYXllci5kaXNhYmxlZCBzZWN0aW9uLAogICAgLmFubm90YXRpb25MYXllci5kaXNhYmxlZCAucG9wdXAgewogICAgICBwb2ludGVyLWV2ZW50czogbm9uZTsKICAgIH0KCi5hbm5vdGF0aW9uTGF5ZXIgLmFubm90YXRpb25Db250ZW50IHsKICAgIHBvc2l0aW9uOiBhYnNvbHV0ZTsKICAgIHdpZHRoOiAxMDAlOwogICAgaGVpZ2h0OiAxMDAlOwogICAgcG9pbnRlci1ldmVudHM6IG5vbmU7CiAgfQoKLmFubm90YXRpb25MYXllciAuYW5ub3RhdGlvbkNvbnRlbnQuZnJlZXRleHQgewogICAgICBiYWNrZ3JvdW5kOiB0cmFuc3BhcmVudDsKICAgICAgYm9yZGVyOiBub25lOwogICAgICBpbnNldDogMDsKICAgICAgb3ZlcmZsb3c6IHZpc2libGU7CiAgICAgIHdoaXRlLXNwYWNlOiBub3dyYXA7CiAgICAgIGZvbnQ6IDEwcHggc2Fucy1zZXJpZjsKICAgICAgbGluZS1oZWlnaHQ6IDEuMzU7CiAgICB9CgouYW5ub3RhdGlvbkxheWVyIHNlY3Rpb24gewogICAgcG9zaXRpb246IGFic29sdXRlOwogICAgdGV4dC1hbGlnbjogaW5pdGlhbDsKICAgIHBvaW50ZXItZXZlbnRzOiBhdXRvOwogICAgYm94LXNpemluZzogYm9yZGVyLWJveDsKICAgIHRyYW5zZm9ybS1vcmlnaW46IDAgMDsKICAgIHVzZXItc2VsZWN0OiBub25lOwogIH0KCi5hbm5vdGF0aW9uTGF5ZXIgc2VjdGlvbjpoYXMoZGl2LmFubm90YXRpb25Db250ZW50KSBjYW52YXMuYW5ub3RhdGlvbkNvbnRlbnQgewogICAgICAgIGRpc3BsYXk6IG5vbmU7CiAgICAgIH0KCi5hbm5vdGF0aW9uTGF5ZXIgc2VjdGlvbiAub3ZlcmxhaWRUZXh0IHsKICAgICAgcG9zaXRpb246IGFic29sdXRlOwogICAgICB0b3A6IDA7CiAgICAgIGxlZnQ6IDA7CiAgICAgIHdpZHRoOiAwOwogICAgICBoZWlnaHQ6IDA7CiAgICAgIGRpc3BsYXk6IGlubGluZS1ibG9jazsKICAgICAgb3ZlcmZsb3c6IGhpZGRlbjsKICAgIH0KCi50ZXh0TGF5ZXIuc2VsZWN0aW5nIH4gLmFubm90YXRpb25MYXllciBzZWN0aW9uIHsKICAgIHBvaW50ZXItZXZlbnRzOiBub25lOwogIH0KCi5hbm5vdGF0aW9uTGF5ZXIgOmlzKC5saW5rQW5ub3RhdGlvbiwgLmJ1dHRvbldpZGdldEFubm90YXRpb24ucHVzaEJ1dHRvbikgPiBhIHsKICAgIHBvc2l0aW9uOiBhYnNvbHV0ZTsKICAgIGZvbnQtc2l6ZTogMWVtOwogICAgdG9wOiAwOwogICAgbGVmdDogMDsKICAgIHdpZHRoOiAxMDAlOwogICAgaGVpZ2h0OiAxMDAlOwogIH0KCi5hbm5vdGF0aW9uTGF5ZXIgOmlzKC5saW5rQW5ub3RhdGlvbiwgLmJ1dHRvbldpZGdldEFubm90YXRpb24ucHVzaEJ1dHRvbik6bm90KC5oYXNCb3JkZXIpCiAgICA+IGE6aG92ZXIgewogICAgb3BhY2l0eTogMC4yOwogICAgYmFja2dyb3VuZC1jb2xvcjogcmdiKDI1NSAyNTUgMCk7CiAgfQoKLmFubm90YXRpb25MYXllciAubGlua0Fubm90YXRpb24uaGFzQm9yZGVyOmhvdmVyIHsKICAgIGJhY2tncm91bmQtY29sb3I6IHJnYigyNTUgMjU1IDAgLyAwLjIpOwogIH0KCi5hbm5vdGF0aW9uTGF5ZXIgLmhhc0JvcmRlciB7CiAgICBiYWNrZ3JvdW5kLXNpemU6IDEwMCUgMTAwJTsKICB9CgouYW5ub3RhdGlvbkxheWVyIC50ZXh0QW5ub3RhdGlvbiBpbWcgewogICAgcG9zaXRpb246IGFic29sdXRlOwogICAgY3Vyc29yOiBwb2ludGVyOwogICAgd2lkdGg6IDEwMCU7CiAgICBoZWlnaHQ6IDEwMCU7CiAgICB0b3A6IDA7CiAgICBsZWZ0OiAwOwogIH0KCi5hbm5vdGF0aW9uTGF5ZXIgLnRleHRXaWRnZXRBbm5vdGF0aW9uIDppcyhpbnB1dCwgdGV4dGFyZWEpLCAuYW5ub3RhdGlvbkxheWVyIC5jaG9pY2VXaWRnZXRBbm5vdGF0aW9uIHNlbGVjdCwgLmFubm90YXRpb25MYXllciAuYnV0dG9uV2lkZ2V0QW5ub3RhdGlvbjppcyguY2hlY2tCb3gsIC5yYWRpb0J1dHRvbikgaW5wdXQgewogICAgYmFja2dyb3VuZC1pbWFnZTogdmFyKC0tYW5ub3RhdGlvbi11bmZvY3VzZWQtZmllbGQtYmFja2dyb3VuZCk7CiAgICBib3JkZXI6IDJweCBzb2xpZCB2YXIoLS1pbnB1dC11bmZvY3VzZWQtYm9yZGVyLWNvbG9yKTsKICAgIGJveC1zaXppbmc6IGJvcmRlci1ib3g7CiAgICBmb250OiBjYWxjKDlweCAqIHZhcigtLXRvdGFsLXNjYWxlLWZhY3RvcikpIHNhbnMtc2VyaWY7CiAgICBoZWlnaHQ6IDEwMCU7CiAgICBtYXJnaW46IDA7CiAgICB2ZXJ0aWNhbC1hbGlnbjogdG9wOwogICAgd2lkdGg6IDEwMCU7CiAgfQoKLmFubm90YXRpb25MYXllciAudGV4dFdpZGdldEFubm90YXRpb24gOmlzKGlucHV0LCB0ZXh0YXJlYSk6cmVxdWlyZWQsIC5hbm5vdGF0aW9uTGF5ZXIgLmNob2ljZVdpZGdldEFubm90YXRpb24gc2VsZWN0OnJlcXVpcmVkLCAuYW5ub3RhdGlvbkxheWVyIC5idXR0b25XaWRnZXRBbm5vdGF0aW9uOmlzKC5jaGVja0JveCwgLnJhZGlvQnV0dG9uKSBpbnB1dDpyZXF1aXJlZCB7CiAgICBvdXRsaW5lOiAxLjVweCBzb2xpZCByZWQ7CiAgfQoKLmFubm90YXRpb25MYXllciAuY2hvaWNlV2lkZ2V0QW5ub3RhdGlvbiBzZWxlY3Qgb3B0aW9uIHsKICAgIHBhZGRpbmc6IDA7CiAgfQoKLmFubm90YXRpb25MYXllciAuYnV0dG9uV2lkZ2V0QW5ub3RhdGlvbi5yYWRpb0J1dHRvbiBpbnB1dCB7CiAgICBib3JkZXItcmFkaXVzOiA1MCU7CiAgfQoKLmFubm90YXRpb25MYXllciAudGV4dFdpZGdldEFubm90YXRpb24gdGV4dGFyZWEgewogICAgcmVzaXplOiBub25lOwogIH0KCi5hbm5vdGF0aW9uTGF5ZXIgLnRleHRXaWRnZXRBbm5vdGF0aW9uIDppcyhpbnB1dCwgdGV4dGFyZWEpW2Rpc2FibGVkXSwgLmFubm90YXRpb25MYXllciAuY2hvaWNlV2lkZ2V0QW5ub3RhdGlvbiBzZWxlY3RbZGlzYWJsZWRdLCAuYW5ub3RhdGlvbkxheWVyIC5idXR0b25XaWRnZXRBbm5vdGF0aW9uOmlzKC5jaGVja0JveCwgLnJhZGlvQnV0dG9uKSBpbnB1dFtkaXNhYmxlZF0gewogICAgYmFja2dyb3VuZDogbm9uZTsKICAgIGJvcmRlcjogMnB4IHNvbGlkIHZhcigtLWlucHV0LWRpc2FibGVkLWJvcmRlci1jb2xvcik7CiAgICBjdXJzb3I6IG5vdC1hbGxvd2VkOwogIH0KCi5hbm5vdGF0aW9uTGF5ZXIgLnRleHRXaWRnZXRBbm5vdGF0aW9uIDppcyhpbnB1dCwgdGV4dGFyZWEpOmhvdmVyLCAuYW5ub3RhdGlvbkxheWVyIC5jaG9pY2VXaWRnZXRBbm5vdGF0aW9uIHNlbGVjdDpob3ZlciwgLmFubm90YXRpb25MYXllciAuYnV0dG9uV2lkZ2V0QW5ub3RhdGlvbjppcyguY2hlY2tCb3gsIC5yYWRpb0J1dHRvbikgaW5wdXQ6aG92ZXIgewogICAgYm9yZGVyOiAycHggc29saWQgdmFyKC0taW5wdXQtaG92ZXItYm9yZGVyLWNvbG9yKTsKICB9CgouYW5ub3RhdGlvbkxheWVyIC50ZXh0V2lkZ2V0QW5ub3RhdGlvbiA6aXMoaW5wdXQsIHRleHRhcmVhKTpob3ZlciwgLmFubm90YXRpb25MYXllciAuY2hvaWNlV2lkZ2V0QW5ub3RhdGlvbiBzZWxlY3Q6aG92ZXIsIC5hbm5vdGF0aW9uTGF5ZXIgLmJ1dHRvbldpZGdldEFubm90YXRpb24uY2hlY2tCb3ggaW5wdXQ6aG92ZXIgewogICAgYm9yZGVyLXJhZGl1czogMnB4OwogIH0KCi5hbm5vdGF0aW9uTGF5ZXIgLnRleHRXaWRnZXRBbm5vdGF0aW9uIDppcyhpbnB1dCwgdGV4dGFyZWEpOmZvY3VzLCAuYW5ub3RhdGlvbkxheWVyIC5jaG9pY2VXaWRnZXRBbm5vdGF0aW9uIHNlbGVjdDpmb2N1cyB7CiAgICBiYWNrZ3JvdW5kOiBub25lOwogICAgYm9yZGVyOiAycHggc29saWQgdmFyKC0taW5wdXQtZm9jdXMtYm9yZGVyLWNvbG9yKTsKICAgIGJvcmRlci1yYWRpdXM6IDJweDsKICAgIG91dGxpbmU6IHZhcigtLWlucHV0LWZvY3VzLW91dGxpbmUpOwogIH0KCi5hbm5vdGF0aW9uTGF5ZXIgLmJ1dHRvbldpZGdldEFubm90YXRpb246aXMoLmNoZWNrQm94LCAucmFkaW9CdXR0b24pIDpmb2N1cyB7CiAgICBiYWNrZ3JvdW5kLWltYWdlOiBub25lOwogICAgYmFja2dyb3VuZC1jb2xvcjogdHJhbnNwYXJlbnQ7CiAgfQoKLmFubm90YXRpb25MYXllciAuYnV0dG9uV2lkZ2V0QW5ub3RhdGlvbi5jaGVja0JveCA6Zm9jdXMgewogICAgYm9yZGVyOiAycHggc29saWQgdmFyKC0taW5wdXQtZm9jdXMtYm9yZGVyLWNvbG9yKTsKICAgIGJvcmRlci1yYWRpdXM6IDJweDsKICAgIG91dGxpbmU6IHZhcigtLWlucHV0LWZvY3VzLW91dGxpbmUpOwogIH0KCi5hbm5vdGF0aW9uTGF5ZXIgLmJ1dHRvbldpZGdldEFubm90YXRpb24ucmFkaW9CdXR0b24gOmZvY3VzIHsKICAgIGJvcmRlcjogMnB4IHNvbGlkIHZhcigtLWlucHV0LWZvY3VzLWJvcmRlci1jb2xvcik7CiAgICBvdXRsaW5lOiB2YXIoLS1pbnB1dC1mb2N1cy1vdXRsaW5lKTsKICB9CgouYW5ub3RhdGlvbkxheWVyIC5idXR0b25XaWRnZXRBbm5vdGF0aW9uLmNoZWNrQm94IGlucHV0OmNoZWNrZWQ6OmJlZm9yZSwKICAuYW5ub3RhdGlvbkxheWVyIC5idXR0b25XaWRnZXRBbm5vdGF0aW9uLmNoZWNrQm94IGlucHV0OmNoZWNrZWQ6OmFmdGVyLAogIC5hbm5vdGF0aW9uTGF5ZXIgLmJ1dHRvbldpZGdldEFubm90YXRpb24ucmFkaW9CdXR0b24gaW5wdXQ6Y2hlY2tlZDo6YmVmb3JlIHsKICAgIGJhY2tncm91bmQtY29sb3I6IENhbnZhc1RleHQ7CiAgICBjb250ZW50OiAiIjsKICAgIGRpc3BsYXk6IGJsb2NrOwogICAgcG9zaXRpb246IGFic29sdXRlOwogIH0KCi5hbm5vdGF0aW9uTGF5ZXIgLmJ1dHRvbldpZGdldEFubm90YXRpb24uY2hlY2tCb3ggaW5wdXQ6Y2hlY2tlZDo6YmVmb3JlLAogIC5hbm5vdGF0aW9uTGF5ZXIgLmJ1dHRvbldpZGdldEFubm90YXRpb24uY2hlY2tCb3ggaW5wdXQ6Y2hlY2tlZDo6YWZ0ZXIgewogICAgaGVpZ2h0OiA4MCU7CiAgICBsZWZ0OiA0NSU7CiAgICB3aWR0aDogMXB4OwogIH0KCi5hbm5vdGF0aW9uTGF5ZXIgLmJ1dHRvbldpZGdldEFubm90YXRpb24uY2hlY2tCb3ggaW5wdXQ6Y2hlY2tlZDo6YmVmb3JlIHsKICAgIHRyYW5zZm9ybTogcm90YXRlKDQ1ZGVnKTsKICB9CgouYW5ub3RhdGlvbkxheWVyIC5idXR0b25XaWRnZXRBbm5vdGF0aW9uLmNoZWNrQm94IGlucHV0OmNoZWNrZWQ6OmFmdGVyIHsKICAgIHRyYW5zZm9ybTogcm90YXRlKC00NWRlZyk7CiAgfQoKLmFubm90YXRpb25MYXllciAuYnV0dG9uV2lkZ2V0QW5ub3RhdGlvbi5yYWRpb0J1dHRvbiBpbnB1dDpjaGVja2VkOjpiZWZvcmUgewogICAgYm9yZGVyLXJhZGl1czogNTAlOwogICAgaGVpZ2h0OiA1MCU7CiAgICBsZWZ0OiAyNSU7CiAgICB0b3A6IDI1JTsKICAgIHdpZHRoOiA1MCU7CiAgfQoKLmFubm90YXRpb25MYXllciAudGV4dFdpZGdldEFubm90YXRpb24gaW5wdXQuY29tYiB7CiAgICBmb250LWZhbWlseTogbW9ub3NwYWNlOwogICAgcGFkZGluZy1sZWZ0OiAycHg7CiAgICBwYWRkaW5nLXJpZ2h0OiAwOwogIH0KCi5hbm5vdGF0aW9uTGF5ZXIgLnRleHRXaWRnZXRBbm5vdGF0aW9uIGlucHV0LmNvbWI6Zm9jdXMgewogICAgLyoKICAgICAqIExldHRlciBzcGFjaW5nIGlzIHBsYWNlZCBvbiB0aGUgcmlnaHQgc2lkZSBvZiBlYWNoIGNoYXJhY3Rlci4gSGVuY2UsIHRoZQogICAgICogbGV0dGVyIHNwYWNpbmcgb2YgdGhlIGxhc3QgY2hhcmFjdGVyIG1heSBiZSBwbGFjZWQgb3V0c2lkZSB0aGUgdmlzaWJsZQogICAgICogYXJlYSwgY2F1c2luZyBob3Jpem9udGFsIHNjcm9sbGluZy4gV2UgYXZvaWQgdGhpcyBieSBleHRlbmRpbmcgdGhlIHdpZHRoCiAgICAgKiB3aGVuIHRoZSBlbGVtZW50IGhhcyBmb2N1cyBhbmQgcmV2ZXJ0IHRoaXMgd2hlbiBpdCBsb3NlcyBmb2N1cy4KICAgICAqLwogICAgd2lkdGg6IDEwMyU7CiAgfQoKLmFubm90YXRpb25MYXllciAuYnV0dG9uV2lkZ2V0QW5ub3RhdGlvbjppcyguY2hlY2tCb3gsIC5yYWRpb0J1dHRvbikgaW5wdXQgewogICAgYXBwZWFyYW5jZTogbm9uZTsKICB9CgouYW5ub3RhdGlvbkxheWVyIC5maWxlQXR0YWNobWVudEFubm90YXRpb24gLnBvcHVwVHJpZ2dlckFyZWEgewogICAgaGVpZ2h0OiAxMDAlOwogICAgd2lkdGg6IDEwMCU7CiAgfQoKLmFubm90YXRpb25MYXllciAucG9wdXBBbm5vdGF0aW9uIHsKICAgIHBvc2l0aW9uOiBhYnNvbHV0ZTsKICAgIGZvbnQtc2l6ZTogY2FsYyg5cHggKiB2YXIoLS10b3RhbC1zY2FsZS1mYWN0b3IpKTsKICAgIHBvaW50ZXItZXZlbnRzOiBub25lOwogICAgd2lkdGg6IG1heC1jb250ZW50OwogICAgbWF4LXdpZHRoOiA0NSU7CiAgICBoZWlnaHQ6IGF1dG87CiAgfQoKLmFubm90YXRpb25MYXllciAucG9wdXAgewogICAgYmFja2dyb3VuZC1jb2xvcjogcmdiKDI1NSAyNTUgMTUzKTsKICAgIGNvbG9yOiBibGFjazsKICAgIGJveC1zaGFkb3c6IDAgY2FsYygycHggKiB2YXIoLS10b3RhbC1zY2FsZS1mYWN0b3IpKQogICAgICBjYWxjKDVweCAqIHZhcigtLXRvdGFsLXNjYWxlLWZhY3RvcikpIHJnYigxMzYgMTM2IDEzNik7CiAgICBib3JkZXItcmFkaXVzOiBjYWxjKDJweCAqIHZhcigtLXRvdGFsLXNjYWxlLWZhY3RvcikpOwogICAgb3V0bGluZTogMS41cHggc29saWQgcmdiKDI1NSAyNTUgNzQpOwogICAgcGFkZGluZzogY2FsYyg2cHggKiB2YXIoLS10b3RhbC1zY2FsZS1mYWN0b3IpKTsKICAgIGN1cnNvcjogcG9pbnRlcjsKICAgIGZvbnQ6IG1lc3NhZ2UtYm94OwogICAgd2hpdGUtc3BhY2U6IG5vcm1hbDsKICAgIHdvcmQtd3JhcDogYnJlYWstd29yZDsKICAgIHBvaW50ZXItZXZlbnRzOiBhdXRvOwogICAgdXNlci1zZWxlY3Q6IHRleHQ7CiAgfQoKLmFubm90YXRpb25MYXllciAucG9wdXBBbm5vdGF0aW9uLmZvY3VzZWQgLnBvcHVwIHsKICAgIG91dGxpbmUtd2lkdGg6IDNweDsKICB9CgouYW5ub3RhdGlvbkxheWVyIC5wb3B1cCAqIHsKICAgIGZvbnQtc2l6ZTogY2FsYyg5cHggKiB2YXIoLS10b3RhbC1zY2FsZS1mYWN0b3IpKTsKICB9CgouYW5ub3RhdGlvbkxheWVyIC5wb3B1cCA+IC5oZWFkZXIgewogICAgZGlzcGxheTogaW5saW5lLWJsb2NrOwogIH0KCi5hbm5vdGF0aW9uTGF5ZXIgLnBvcHVwID4gLmhlYWRlciA+IC50aXRsZSB7CiAgICBkaXNwbGF5OiBpbmxpbmU7CiAgICBmb250LXdlaWdodDogYm9sZDsKICB9CgouYW5ub3RhdGlvbkxheWVyIC5wb3B1cCA+IC5oZWFkZXIgLnBvcHVwRGF0ZSB7CiAgICBkaXNwbGF5OiBpbmxpbmUtYmxvY2s7CiAgICBtYXJnaW4tbGVmdDogY2FsYyg1cHggKiB2YXIoLS10b3RhbC1zY2FsZS1mYWN0b3IpKTsKICAgIHdpZHRoOiBmaXQtY29udGVudDsKICB9CgouYW5ub3RhdGlvbkxheWVyIC5wb3B1cENvbnRlbnQgewogICAgYm9yZGVyLXRvcDogMXB4IHNvbGlkIHJnYig1MSA1MSA1MSk7CiAgICBtYXJnaW4tdG9wOiBjYWxjKDJweCAqIHZhcigtLXRvdGFsLXNjYWxlLWZhY3RvcikpOwogICAgcGFkZGluZy10b3A6IGNhbGMoMnB4ICogdmFyKC0tdG90YWwtc2NhbGUtZmFjdG9yKSk7CiAgfQoKLmFubm90YXRpb25MYXllciAucmljaFRleHQgPiAqIHsKICAgIHdoaXRlLXNwYWNlOiBwcmUtd3JhcDsKICAgIGZvbnQtc2l6ZTogY2FsYyg5cHggKiB2YXIoLS10b3RhbC1zY2FsZS1mYWN0b3IpKTsKICB9CgouYW5ub3RhdGlvbkxheWVyIC5wb3B1cFRyaWdnZXJBcmVhIHsKICAgIGN1cnNvcjogcG9pbnRlcjsKICB9CgouYW5ub3RhdGlvbkxheWVyIC5wb3B1cFRyaWdnZXJBcmVhOmhvdmVyIHsKICAgICAgYmFja2Ryb3AtZmlsdGVyOiB2YXIoLS1oY20taGlnaGxpZ2h0LWZpbHRlcik7CiAgICB9CgouYW5ub3RhdGlvbkxheWVyIHNlY3Rpb24gc3ZnIHsKICAgIHBvc2l0aW9uOiBhYnNvbHV0ZTsKICAgIHdpZHRoOiAxMDAlOwogICAgaGVpZ2h0OiAxMDAlOwogICAgdG9wOiAwOwogICAgbGVmdDogMDsKICB9CgouYW5ub3RhdGlvbkxheWVyIC5hbm5vdGF0aW9uVGV4dENvbnRlbnQgewogICAgcG9zaXRpb246IGFic29sdXRlOwogICAgd2lkdGg6IDEwMCU7CiAgICBoZWlnaHQ6IDEwMCU7CiAgICBvcGFjaXR5OiAwOwogICAgY29sb3I6IHRyYW5zcGFyZW50OwogICAgdXNlci1zZWxlY3Q6IG5vbmU7CiAgICBwb2ludGVyLWV2ZW50czogbm9uZTsKICB9CgouYW5ub3RhdGlvbkxheWVyIC5hbm5vdGF0aW9uVGV4dENvbnRlbnQgc3BhbiB7CiAgICAgIHdpZHRoOiAxMDAlOwogICAgICBkaXNwbGF5OiBpbmxpbmUtYmxvY2s7CiAgICB9CgouYW5ub3RhdGlvbkxheWVyIHN2Zy5xdWFkcmlsYXRlcmFsc0NvbnRhaW5lciB7CiAgICBjb250YWluOiBzdHJpY3Q7CiAgICB3aWR0aDogMDsKICAgIGhlaWdodDogMDsKICAgIHBvc2l0aW9uOiBhYnNvbHV0ZTsKICAgIHRvcDogMDsKICAgIGxlZnQ6IDA7CiAgICB6LWluZGV4OiAtMTsKICB9Cg==
+/* Copyright 2014 Mozilla Foundation
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+.annotationLayer {
+  color-scheme: only light;
+
+  --annotation-unfocused-field-background: url("data:image/svg+xml;charset=UTF-8,<svg width='1px' height='1px' xmlns='http://www.w3.org/2000/svg'><rect width='100%' height='100%' style='fill:rgba(0, 54, 255, 0.13);'/></svg>");
+  --input-focus-border-color: Highlight;
+  --input-focus-outline: 1px solid Canvas;
+  --input-unfocused-border-color: transparent;
+  --input-disabled-border-color: transparent;
+  --input-hover-border-color: black;
+  --link-outline: none;
+}
+
+@media screen and (forced-colors: active) {
+
+.annotationLayer {
+    --input-focus-border-color: CanvasText;
+    --input-unfocused-border-color: ActiveText;
+    --input-disabled-border-color: GrayText;
+    --input-hover-border-color: Highlight;
+    --link-outline: 1.5px solid LinkText
+}
+
+    .annotationLayer .textWidgetAnnotation :is(input, textarea):required, .annotationLayer .choiceWidgetAnnotation select:required, .annotationLayer .buttonWidgetAnnotation:is(.checkBox, .radioButton) input:required {
+      outline: 1.5px solid selectedItem;
+    }
+
+    .annotationLayer .linkAnnotation {
+      outline: var(--link-outline);
+    }
+
+      .annotationLayer .linkAnnotation:hover {
+        backdrop-filter: var(--hcm-highlight-filter);
+      }
+
+      .annotationLayer .linkAnnotation > a:hover {
+        opacity: 0 !important;
+        background: none !important;
+        box-shadow: none;
+      }
+
+    .annotationLayer .popupAnnotation .popup {
+      outline: calc(1.5px * var(--total-scale-factor)) solid CanvasText !important;
+      background-color: ButtonFace !important;
+      color: ButtonText !important;
+    }
+
+    .annotationLayer .highlightArea:hover::after {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      backdrop-filter: var(--hcm-highlight-filter);
+      content: "";
+      pointer-events: none;
+    }
+
+    .annotationLayer .popupAnnotation.focused .popup {
+      outline: calc(3px * var(--total-scale-factor)) solid Highlight !important;
+    }
+  }
+
+.annotationLayer {
+
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  transform-origin: 0 0;
+}
+
+.annotationLayer[data-main-rotation="90"] .norotate {
+    transform: rotate(270deg) translateX(-100%);
+  }
+
+.annotationLayer[data-main-rotation="180"] .norotate {
+    transform: rotate(180deg) translate(-100%, -100%);
+  }
+
+.annotationLayer[data-main-rotation="270"] .norotate {
+    transform: rotate(90deg) translateY(-100%);
+  }
+
+.annotationLayer.disabled section,
+    .annotationLayer.disabled .popup {
+      pointer-events: none;
+    }
+
+.annotationLayer .annotationContent {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+  }
+
+.annotationLayer .annotationContent.freetext {
+      background: transparent;
+      border: none;
+      inset: 0;
+      overflow: visible;
+      white-space: nowrap;
+      font: 10px sans-serif;
+      line-height: 1.35;
+    }
+
+.annotationLayer section {
+    position: absolute;
+    text-align: initial;
+    pointer-events: auto;
+    box-sizing: border-box;
+    transform-origin: 0 0;
+    user-select: none;
+  }
+
+.annotationLayer section:has(div.annotationContent) canvas.annotationContent {
+        display: none;
+      }
+
+.annotationLayer section .overlaidText {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 0;
+      height: 0;
+      display: inline-block;
+      overflow: hidden;
+    }
+
+.textLayer.selecting ~ .annotationLayer section {
+    pointer-events: none;
+  }
+
+.annotationLayer :is(.linkAnnotation, .buttonWidgetAnnotation.pushButton) > a {
+    position: absolute;
+    font-size: 1em;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+.annotationLayer :is(.linkAnnotation, .buttonWidgetAnnotation.pushButton):not(.hasBorder)
+    > a:hover {
+    opacity: 0.2;
+    background-color: rgb(255 255 0);
+  }
+
+.annotationLayer .linkAnnotation.hasBorder:hover {
+    background-color: rgb(255 255 0 / 0.2);
+  }
+
+.annotationLayer .hasBorder {
+    background-size: 100% 100%;
+  }
+
+.annotationLayer .textAnnotation img {
+    position: absolute;
+    cursor: pointer;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+  }
+
+.annotationLayer .textWidgetAnnotation :is(input, textarea), .annotationLayer .choiceWidgetAnnotation select, .annotationLayer .buttonWidgetAnnotation:is(.checkBox, .radioButton) input {
+    background-image: var(--annotation-unfocused-field-background);
+    border: 2px solid var(--input-unfocused-border-color);
+    box-sizing: border-box;
+    font: calc(9px * var(--total-scale-factor)) sans-serif;
+    height: 100%;
+    margin: 0;
+    vertical-align: top;
+    width: 100%;
+  }
+
+.annotationLayer .textWidgetAnnotation :is(input, textarea):required, .annotationLayer .choiceWidgetAnnotation select:required, .annotationLayer .buttonWidgetAnnotation:is(.checkBox, .radioButton) input:required {
+    outline: 1.5px solid red;
+  }
+
+.annotationLayer .choiceWidgetAnnotation select option {
+    padding: 0;
+  }
+
+.annotationLayer .buttonWidgetAnnotation.radioButton input {
+    border-radius: 50%;
+  }
+
+.annotationLayer .textWidgetAnnotation textarea {
+    resize: none;
+  }
+
+.annotationLayer .textWidgetAnnotation :is(input, textarea)[disabled], .annotationLayer .choiceWidgetAnnotation select[disabled], .annotationLayer .buttonWidgetAnnotation:is(.checkBox, .radioButton) input[disabled] {
+    background: none;
+    border: 2px solid var(--input-disabled-border-color);
+    cursor: not-allowed;
+  }
+
+.annotationLayer .textWidgetAnnotation :is(input, textarea):hover, .annotationLayer .choiceWidgetAnnotation select:hover, .annotationLayer .buttonWidgetAnnotation:is(.checkBox, .radioButton) input:hover {
+    border: 2px solid var(--input-hover-border-color);
+  }
+
+.annotationLayer .textWidgetAnnotation :is(input, textarea):hover, .annotationLayer .choiceWidgetAnnotation select:hover, .annotationLayer .buttonWidgetAnnotation.checkBox input:hover {
+    border-radius: 2px;
+  }
+
+.annotationLayer .textWidgetAnnotation :is(input, textarea):focus, .annotationLayer .choiceWidgetAnnotation select:focus {
+    background: none;
+    border: 2px solid var(--input-focus-border-color);
+    border-radius: 2px;
+    outline: var(--input-focus-outline);
+  }
+
+.annotationLayer .buttonWidgetAnnotation:is(.checkBox, .radioButton) :focus {
+    background-image: none;
+    background-color: transparent;
+  }
+
+.annotationLayer .buttonWidgetAnnotation.checkBox :focus {
+    border: 2px solid var(--input-focus-border-color);
+    border-radius: 2px;
+    outline: var(--input-focus-outline);
+  }
+
+.annotationLayer .buttonWidgetAnnotation.radioButton :focus {
+    border: 2px solid var(--input-focus-border-color);
+    outline: var(--input-focus-outline);
+  }
+
+.annotationLayer .buttonWidgetAnnotation.checkBox input:checked::before,
+  .annotationLayer .buttonWidgetAnnotation.checkBox input:checked::after,
+  .annotationLayer .buttonWidgetAnnotation.radioButton input:checked::before {
+    background-color: CanvasText;
+    content: "";
+    display: block;
+    position: absolute;
+  }
+
+.annotationLayer .buttonWidgetAnnotation.checkBox input:checked::before,
+  .annotationLayer .buttonWidgetAnnotation.checkBox input:checked::after {
+    height: 80%;
+    left: 45%;
+    width: 1px;
+  }
+
+.annotationLayer .buttonWidgetAnnotation.checkBox input:checked::before {
+    transform: rotate(45deg);
+  }
+
+.annotationLayer .buttonWidgetAnnotation.checkBox input:checked::after {
+    transform: rotate(-45deg);
+  }
+
+.annotationLayer .buttonWidgetAnnotation.radioButton input:checked::before {
+    border-radius: 50%;
+    height: 50%;
+    left: 25%;
+    top: 25%;
+    width: 50%;
+  }
+
+.annotationLayer .textWidgetAnnotation input.comb {
+    font-family: monospace;
+    padding-left: 2px;
+    padding-right: 0;
+  }
+
+.annotationLayer .textWidgetAnnotation input.comb:focus {
+    /*
+     * Letter spacing is placed on the right side of each character. Hence, the
+     * letter spacing of the last character may be placed outside the visible
+     * area, causing horizontal scrolling. We avoid this by extending the width
+     * when the element has focus and revert this when it loses focus.
+     */
+    width: 103%;
+  }
+
+.annotationLayer .buttonWidgetAnnotation:is(.checkBox, .radioButton) input {
+    appearance: none;
+  }
+
+.annotationLayer .fileAttachmentAnnotation .popupTriggerArea {
+    height: 100%;
+    width: 100%;
+  }
+
+.annotationLayer .popupAnnotation {
+    position: absolute;
+    font-size: calc(9px * var(--total-scale-factor));
+    pointer-events: none;
+    width: max-content;
+    max-width: 45%;
+    height: auto;
+  }
+
+.annotationLayer .popup {
+    background-color: rgb(255 255 153);
+    color: black;
+    box-shadow: 0 calc(2px * var(--total-scale-factor))
+      calc(5px * var(--total-scale-factor)) rgb(136 136 136);
+    border-radius: calc(2px * var(--total-scale-factor));
+    outline: 1.5px solid rgb(255 255 74);
+    padding: calc(6px * var(--total-scale-factor));
+    cursor: pointer;
+    font: message-box;
+    white-space: normal;
+    word-wrap: break-word;
+    pointer-events: auto;
+    user-select: text;
+  }
+
+.annotationLayer .popupAnnotation.focused .popup {
+    outline-width: 3px;
+  }
+
+.annotationLayer .popup * {
+    font-size: calc(9px * var(--total-scale-factor));
+  }
+
+.annotationLayer .popup > .header {
+    display: inline-block;
+  }
+
+.annotationLayer .popup > .header > .title {
+    display: inline;
+    font-weight: bold;
+  }
+
+.annotationLayer .popup > .header .popupDate {
+    display: inline-block;
+    margin-left: calc(5px * var(--total-scale-factor));
+    width: fit-content;
+  }
+
+.annotationLayer .popupContent {
+    border-top: 1px solid rgb(51 51 51);
+    margin-top: calc(2px * var(--total-scale-factor));
+    padding-top: calc(2px * var(--total-scale-factor));
+  }
+
+.annotationLayer .richText > * {
+    white-space: pre-wrap;
+    font-size: calc(9px * var(--total-scale-factor));
+  }
+
+.annotationLayer .popupTriggerArea {
+    cursor: pointer;
+  }
+
+.annotationLayer .popupTriggerArea:hover {
+      backdrop-filter: var(--hcm-highlight-filter);
+    }
+
+.annotationLayer section svg {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+  }
+
+.annotationLayer .annotationTextContent {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    color: transparent;
+    user-select: none;
+    pointer-events: none;
+  }
+
+.annotationLayer .annotationTextContent span {
+      width: 100%;
+      display: inline-block;
+    }
+
+.annotationLayer svg.quadrilateralsContainer {
+    contain: strict;
+    width: 0;
+    height: 0;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: -1;
+  }
