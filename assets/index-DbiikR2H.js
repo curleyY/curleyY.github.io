@@ -2998,33 +2998,39 @@ html[data-theme="light"] .lp2-trans:hover { background: rgba(15, 23, 42, 0.09); 
 /* 平板（侧边栏可见，961~1329px）：强制三个文件夹同一行。
    关键：用 zoom 真实缩小布局占位（transform:scale 只缩视觉不缩布局，
    布局盒仍是 170px 导致平板内容区算不下就换行）。
-   只做轻微缩放（0.92）并把省下的空间换成更大的间距，避免卡片缩太小。 */
+   间距改用 space-between —— 三个文件夹铺满内容区，间距随视口自动变大
+   （居中 + 固定 gap 会在宽屏两侧留下大片空白，看上去仍显拥挤）；
+   max-width 限制铺开幅度，避免大窗口下三个文件夹散得过远。 */
 @media (min-width: 961px) and (max-width: 1329px) {
   .pf-stage {
     flex-wrap: nowrap;
-    gap: clamp(48px, 5.5vw, 120px); /* 平板间距再拉大：36/4.2vw/92 → 48/5.5vw/120 */
-    padding: 0 32px;                /* 侧留白 48→32，省出的宽度全给间距 */
+    justify-content: space-between;
+    gap: 48px; /* 最小间距（实际间距由 space-between 分配） */
+    padding: 0 56px;
+    max-width: 920px;
+    margin-inline: auto;
   }
   .pf-item {
-    padding: 70px 0 30px;           /* 侧 padding 8→0，同样让位给间距 */
+    padding: 70px 0 30px;
   }
   .folder-card {
-    zoom: 0.9;                      /* 0.92→0.9，轻微再让一点，保证 961px 宽下也不换行 */
+    zoom: 0.9;
   }
 }
 
-/* 窄平板/大手机（侧边栏已隐藏，内容区=全宽，581~960px）：同样强制单行 */
+/* 窄平板/大手机（侧边栏已隐藏，内容区=全宽，581~960px）：同样强制单行并铺开 */
 @media (min-width: 581px) and (max-width: 960px) {
   .pf-stage {
     flex-wrap: nowrap;
-    gap: clamp(16px, 3.8vw, 60px); /* 窄平板间距 12→随视口 16~60 */
-    padding: 0 16px;               /* 侧留白 20→16 */
+    justify-content: space-between;
+    gap: 24px;
+    padding: 0 28px;
   }
   .pf-item {
     padding: 50px 4px 20px;
   }
   .folder-card {
-    zoom: 0.78;                    /* 0.8→0.78，给间距腾宽度 */
+    zoom: 0.78;
   }
 }
 
