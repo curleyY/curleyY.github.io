@@ -2999,14 +2999,14 @@ html[data-theme="light"] .lp2-trans:hover { background: rgba(15, 23, 42, 0.09); 
 @media (min-width: 961px) and (max-width: 1329px) {
   .pf-stage {
     flex-wrap: nowrap;
-    gap: clamp(36px, 4.2vw, 92px);
-    padding: 0 48px;
+    gap: clamp(48px, 5.5vw, 120px); /* 平板间距再拉大：36/4.2vw/92 → 48/5.5vw/120 */
+    padding: 0 32px;                /* 侧留白 48→32，省出的宽度全给间距 */
   }
   .pf-item {
-    padding: 70px 8px 30px;
+    padding: 70px 0 30px;           /* 侧 padding 8→0，同样让位给间距 */
   }
   .folder-card {
-    zoom: 0.92;
+    zoom: 0.9;                      /* 0.92→0.9，轻微再让一点，保证 961px 宽下也不换行 */
   }
 }
 
@@ -3014,14 +3014,14 @@ html[data-theme="light"] .lp2-trans:hover { background: rgba(15, 23, 42, 0.09); 
 @media (min-width: 581px) and (max-width: 960px) {
   .pf-stage {
     flex-wrap: nowrap;
-    gap: 12px;
-    padding: 0 20px;
+    gap: clamp(16px, 3.8vw, 60px); /* 窄平板间距 12→随视口 16~60 */
+    padding: 0 16px;               /* 侧留白 20→16 */
   }
   .pf-item {
-    padding: 50px 8px 20px;
+    padding: 50px 4px 20px;
   }
   .folder-card {
-    zoom: 0.8;
+    zoom: 0.78;                    /* 0.8→0.78，给间距腾宽度 */
   }
 }
 
