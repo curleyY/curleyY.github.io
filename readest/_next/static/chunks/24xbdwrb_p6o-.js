@@ -1,3 +1,0 @@
-(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,749257,o=>{"use strict";o.S([992180,"CloseRequestedEvent,V,Effect,x,EffectState,N,ProgressBarStatus,S,UserAttentionType,r,Window,i,availableMonitors,G,currentMonitor,H,cursorPosition,p,getAllWindows,P,getCurrentWindow,L,monitorFromPoint,d,primaryMonitor,U",0,291627,"LogicalPosition,C,LogicalSize,y,PhysicalPosition,G,PhysicalSize,r"])}]);
-
-//# sourceMappingURL=2o75p8sdyycvy.js.map

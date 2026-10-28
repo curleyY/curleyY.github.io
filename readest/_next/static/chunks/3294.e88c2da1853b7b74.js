@@ -1,0 +1,2 @@
+"use strict";(self.webpackChunk_N_E=self.webpackChunk_N_E||[]).push([[3294],{23294:(e,n,a)=>{a.d(n,{getMatches:()=>p}),"function"==typeof SuppressedError&&SuppressedError;async function t(e){let n=arguments.length>1&&void 0!==arguments[1]?arguments[1]:{},a=arguments.length>2?arguments[2]:void 0;return window.__TAURI_INTERNALS__.invoke(e,n,a)}async function p(){return await t("plugin:cli|cli_matches")}new WeakMap,new WeakMap,new WeakMap,new WeakMap,new WeakMap}}]);
+//# sourceMappingURL=3294.e88c2da1853b7b74.js.map

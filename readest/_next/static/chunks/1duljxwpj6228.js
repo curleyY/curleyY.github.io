@@ -1,3 +1,0 @@
-(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,159677,e=>{"use strict";var t=e.i(991024);async function a(e,a){await (0,t.invoke)("plugin:clipboard-manager|write_text",{label:a?.label,text:e})}async function i(){return await (0,t.invoke)("plugin:clipboard-manager|read_text")}e.i(145e3),e.s(["readText",0,i,"writeText",0,a])}]);
-
-//# sourceMappingURL=2r0yhbdk7sdi9.js.map

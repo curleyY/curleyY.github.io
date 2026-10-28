@@ -1,3 +1,0 @@
-(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,{otherChunks:["static/chunks/085epkfxrud06.js","static/chunks/18-9pb3z39ei1.js","static/chunks/1fpm4kif50bg4.js","static/chunks/3gzhvk-5kogae.js","static/chunks/3t7n1n8r-68x5.js","static/chunks/1ua60ed0kh30h.js","static/chunks/3j-zikrz6ic0j.js","static/chunks/1esaxhrp_0c2h.js"],runtimeModuleIds:[809677]}]);
-
-//# sourceMappingURL=2o75p8sdyycvy.js.map
