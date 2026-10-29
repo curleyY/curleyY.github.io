@@ -1,0 +1,408 @@
+<!doctype html>
+<html lang="zh">
+  <head><script>
+/* browser shim for Tauri desktop APIs (static web hosting) v4 */
+(function(){
+  if(window.__TAURI_INTERNALS__)return;
+  var seq=0,cb={};
+  var P={app_data_dir:"/readest-data",app_cache_dir:"/readest-cache",temp_dir:"/tmp",app_log_dir:"/readest-logs",app_config_dir:"/readest-config",data_dir:"/readest-data",audio_cache_dir:"/readest-cache/audio",local_data_dir:"/readest-data",download_dir:"/downloads",picture_dir:"/pictures",video_dir:"/videos",document_dir:"/documents",home_dir:"/home/web",runtime_dir:"/run",executable_dir:"/app",font_dir:"/fonts",resource_dir:"/resources"};
+  window.__WB_PICKED__=new Map();
+  var MEM={};
+  var BLOB={};
+  var RID={map:new Map(),next:100};
+  var enc=new TextEncoder(),dec=new TextDecoder();
+  function fskey(p){return p}
+  function cands(p){
+    p=String(p);
+    var s=p.replace(/^\/readest-data\//,"");
+    return [p,s,"/readest-data/"+s];
+  }
+  function toAB(x){
+    try{
+      if(x instanceof ArrayBuffer)return x;
+      if(x instanceof Uint8Array)return x.buffer.slice(x.byteOffset,x.byteOffset+x.byteLength);
+      if(typeof x==="string"){var u=enc.encode(x);return u.buffer.slice(u.byteOffset,u.byteOffset+u.byteLength);}
+      if(Array.isArray(x))return new Uint8Array(x).buffer;
+      if(x&&x.buffer instanceof ArrayBuffer){
+        var off=x.byteOffset||0,len=x.byteLength!==undefined?x.byteLength:x.buffer.byteLength;
+        return new Uint8Array(x.buffer,off,len).buffer.slice(off,off+len);
+      }
+    }catch(e){}
+    return new ArrayBuffer(0);
+  }
+  /* ---- IndexedDB fs storage ---- */
+  var DBP=null;
+  function db(){
+    if(DBP)return DBP;
+    DBP=new Promise(function(res){
+      try{
+        var rq=indexedDB.open("readest-shim-fs",1);
+        rq.onupgradeneeded=function(e){try{e.target.result.createObjectStore("files");}catch(x){}};
+        rq.onsuccess=function(e){res(e.target.result)};
+        rq.onerror=function(){res(null)};
+        rq.onblocked=function(){res(null)};
+      }catch(e){res(null)}
+    });
+    return DBP;
+  }
+  function idbSet(p,ab){
+    return db().then(function(d){
+      return new Promise(function(res){
+        if(!d)return res();
+        try{
+          var tx=d.transaction("files","readwrite");
+          tx.objectStore("files").put(ab,fskey(p));
+          tx.oncomplete=function(){res()};
+          tx.onerror=function(){res()};
+          tx.onabort=function(){res()};
+        }catch(e){res()}
+      });
+    });
+  }
+  function idbGet(p){
+    return db().then(function(d){
+      return new Promise(function(res){
+        if(!d)return res(null);
+        try{
+          var rq=d.transaction("files","readonly").objectStore("files").get(fskey(p));
+          rq.onsuccess=function(){res(rq.result||null)};
+          rq.onerror=function(){res(null)};
+        }catch(e){res(null)}
+      });
+    });
+  }
+  function idbDel(p){
+    return db().then(function(d){
+      return new Promise(function(res){
+        if(!d)return res();
+        try{
+          var tx=d.transaction("files","readwrite");
+          tx.objectStore("files").delete(fskey(p));
+          tx.oncomplete=function(){res()};
+          tx.onerror=function(){res()};
+        }catch(e){res()}
+      });
+    });
+  }
+  function idbKeys(){
+    return db().then(function(d){
+      return new Promise(function(res){
+        if(!d)return res([]);
+        try{
+          var rq=d.transaction("files","readonly").objectStore("files").getAllKeys();
+          rq.onsuccess=function(){res(rq.result||[])};
+          rq.onerror=function(){res([])};
+        }catch(e){res([])}
+      });
+    });
+  }
+  (function preload(){
+    return idbKeys().then(function(ks){
+      var chain=Promise.resolve();
+      ks.forEach(function(k){
+        chain=chain.then(function(){return idbGet(k).then(function(v){if(v)MEM[k]=v;});});
+      });
+      return chain;
+    }).catch(function(){});
+  })();
+  /* ---- fs helpers ---- */
+  function picked(p){
+    var cs=cands(p);
+    for(var i=0;i<cs.length;i++){var f=window.__WB_PICKED__.get(cs[i]);if(f)return f;}
+    return null;
+  }
+  function statSync(p){
+    var f=picked(p);
+    if(f)return{size:f.size,isFile:true,isDirectory:false,readOnly:false,mtimeMs:Date.now()};
+    for(var i=0;i<cands(p).length;i++){
+      var ab=MEM[cands(p)[i]];
+      if(ab)return{size:ab.byteLength,isFile:true,isDirectory:false,readOnly:false,mtimeMs:Date.now()};
+    }
+    return null;
+  }
+  function fsGet(p){
+    var f=picked(p);
+    if(f)return f.arrayBuffer();
+    var cs=cands(p);
+    for(var i=0;i<cs.length;i++)if(MEM[cs[i]])return Promise.resolve(MEM[cs[i]]);
+    return idbGet(p).then(function(v){if(v&&!MEM[cands(p)[0]])MEM[cands(p)[0]]=v;return v;});
+  }
+  function fsSet(p,x){
+    var ab=toAB(x);
+    var key=cands(p)[0];
+    if(BLOB[key]){try{URL.revokeObjectURL(BLOB[key])}catch(e){} delete BLOB[key];}
+    MEM[key]=ab;
+    return idbSet(key,ab);
+  }
+  function fsDel(p){
+    cands(p).forEach(function(q){if(MEM[q])delete MEM[q];if(BLOB[q]){try{URL.revokeObjectURL(BLOB[q])}catch(e){}delete BLOB[q];}});
+    return idbDel(p);
+  }
+  function blobUrlFor(p){
+    p=String(p);
+    if(BLOB[p])return BLOB[p];
+    var f=picked(p);
+    if(f){BLOB[p]=URL.createObjectURL(f);return BLOB[p];}
+    var cs=cands(p);
+    for(var i=0;i<cs.length;i++){
+      if(MEM[cs[i]]){BLOB[p]=URL.createObjectURL(new Blob([MEM[cs[i]]]));return BLOB[p];}
+    }
+    return "";
+  }
+  function maybeDownload(p,data,mime){
+    if(String(p).indexOf("/downloads/")===0){
+      try{
+        var b=data instanceof Blob?data:new Blob([data],{type:mime||"application/octet-stream"});
+        var a=document.createElement("a");a.href=URL.createObjectURL(b);a.download=String(p).split("/").pop()||"download";
+        document.body.appendChild(a);a.click();setTimeout(function(){a.remove();},500);
+      }catch(e){}
+    }
+  }
+  /* ---- dialog: file picker ---- */
+  function uniquePath(name){
+    var p="/local/"+name;
+    if(window.__WB_PICKED__.has(p)){var d=name.lastIndexOf(".");d=d>0?d:name.length;p=name.slice(0,d)+"-"+(++seq)+name.slice(d);}
+    return p;
+  }
+  function pickFiles(opts){
+    return new Promise(function(res){
+      var inp=document.createElement("input");
+      inp.type="file";
+      if(opts&&opts.directory){inp.setAttribute("webkitdirectory","");}
+      if(opts&&opts.multiple){inp.multiple=true;}
+      if(opts&&opts.filters&&opts.filters.length&&!opts.directory){
+        var exts=[];
+        (opts.filters||[]).forEach(function(f){(f.extensions||[]).forEach(function(x){if(x&&x!=="*")exts.push("."+String(x).toLowerCase());});});
+        if(exts.length)inp.accept=exts.join(",");
+      }
+      inp.style.display="none";
+      var done=false;
+      function finish(files){
+        if(done)return;done=true;
+        var paths=files.map(function(f){var p=uniquePath(f.name||"file");window.__WB_PICKED__.set(p,f);return p;});
+        if(inp.parentNode)inp.remove();
+        if(opts&&opts.multiple)res(paths);else res(paths.length?paths[0]:null);
+      }
+      inp.addEventListener("change",function(){finish(Array.prototype.slice.call(inp.files||[]));});
+      inp.addEventListener("cancel",function(){finish([]);});
+      (document.body||document.documentElement).appendChild(inp);
+      inp.click();
+    });
+  }
+  function handleOf(ridArg){
+    var rid=ridArg;
+    if(rid&&typeof rid==="object"&&rid.rid!==undefined)rid=rid.rid;
+    if(rid&&typeof rid==="object"&&rid.rid!==undefined)rid=rid.rid;
+    return RID.map.get(rid);
+  }
+  function isBytes(x){
+    return x instanceof ArrayBuffer||x instanceof Uint8Array||(x&&typeof x==="object"&&typeof x.length==="number"&&x.path===undefined&&x.contents===undefined&&x.rid===undefined);
+  }
+  window.__TAURI_INTERNALS__={metadata:{currentWindow:{label:"main"},currentWebview:{label:"main"}},plugins:{},callbacks:cb,isTauri:true,transformCallback:function(fn,once){var id=++seq;cb[id]=fn;return id;},convertFileSrc:function(p){try{return blobUrlFor(p);}catch(e){return "";}},invoke:function(cmd){
+    var args=arguments[1],iopts=arguments[2];
+    try{
+      if(cmd.indexOf("plugin:resources|close")===0){
+        var rc=(args||{}).rid;
+        if(rc&&typeof rc==="object"&&rc.rid!==undefined)rc=rc.rid;
+        RID.map.delete(rc);
+        return Promise.resolve(null);
+      }
+      if(cmd.indexOf("plugin:path|")===0){
+        var name=cmd.slice("plugin:path|".length);var pargs=args||{};
+        if(name==="resolve_directory")return Promise.resolve(P[pargs.directory]!==undefined?P[pargs.directory]:"/readest-data");
+        if(name==="basename"){var bp=String(pargs.path||"");return Promise.resolve(bp.split("/").pop()||bp);}
+        if(name==="dirname"){var dp=String(pargs.path||"");var ix=dp.lastIndexOf("/");return Promise.resolve(ix>0?dp.slice(0,ix):"/");}
+        if(name==="join"){var parts=(pargs.paths||pargs.components||[]).map(String).filter(Boolean);return Promise.resolve(parts.join("/").replace(/\/{2,}/g,"/"));}
+        return Promise.resolve(P[name]!==undefined?P[name]:"/readest-data");
+      }
+      if(cmd.indexOf("plugin:fs|")===0){
+        var fname=cmd.slice("plugin:fs|".length);var fargs=args||{};
+        var p=fargs.path||fargs.oldPath||"";
+        if(fname==="open"){
+          var fo=fargs.options||{};
+          var writable=!!(fo.write||fo.create||fargs.write||fargs.create);
+          var f0=statSync(p);
+          if(!f0&&!writable){
+            return fsGet(p).then(function(v){
+              if(!v)throw new Error("shim: no such file: "+p);
+              var rid=RID.next++;
+              RID.map.set(rid,{path:p,offset:0,size:v.byteLength});
+              return rid;
+            });
+          }
+          var rid=RID.next++;
+          RID.map.set(rid,{path:p,offset:0,size:f0?f0.size:0});
+          return Promise.resolve(rid);
+        }
+        if(fname==="read"){
+          var h1=handleOf(fargs.rid);
+          if(!h1)return Promise.reject(new Error("shim: bad rid"));
+          var len=fargs.bufLength||fargs.len||fargs.length||1048576;
+          return fsGet(h1.path).then(function(ab){
+            if(!ab)throw new Error("shim: file gone: "+h1.path);
+            var u8=new Uint8Array(ab);
+            var end=Math.min(u8.length,h1.offset+len);
+            var out=u8.subarray(h1.offset,end);
+            h1.offset=end;
+            return Array.prototype.slice.call(out);
+          });
+        }
+        if(fname==="write"){
+          var hw=handleOf(fargs.rid);
+          if(!hw)return Promise.reject(new Error("shim: bad rid"));
+          var buf=fargs.data!==undefined?fargs.data:fargs.buffer;
+          if(buf===undefined||buf===null)return Promise.resolve(0);
+          var u8w=new Uint8Array(toAB(buf));
+          return fsGet(hw.path).then(function(old){
+            var oldU8=old?new Uint8Array(old):new Uint8Array(0);
+            var newSize=Math.max(oldU8.length,hw.offset+u8w.length);
+            var nu=new Uint8Array(newSize);
+            nu.set(oldU8,0);
+            nu.set(u8w,hw.offset);
+            hw.offset+=u8w.length;
+            hw.size=newSize;
+            return fsSet(hw.path,nu.buffer).then(function(){return u8w.length;});
+          });
+        }
+        if(fname==="seek"){
+          var h2=handleOf(fargs.rid);
+          if(!h2)return Promise.reject(new Error("shim: bad rid"));
+          var off=fargs.offset||0,wh=fargs.whence||0;
+          var pos=wh===0?off:(wh===1?h2.offset+off:h2.size+off);
+          if(pos<0)pos=0;
+          h2.offset=pos;
+          return Promise.resolve(pos);
+        }
+        if(fname==="fstat"){
+          var h3=handleOf(fargs.rid);
+          if(!h3)return Promise.reject(new Error("shim: bad rid"));
+          return Promise.resolve({isFile:true,isDirectory:false,size:h3.size,readOnly:false,mtimeMs:Date.now()});
+        }
+        if(fname==="ftruncate")return Promise.resolve(null);
+        if(fname==="read_text_file"){
+          var pp1=p;
+          return fsGet(pp1).then(function(ab){
+            if(!ab)throw new Error("shim: file not found: "+pp1);
+            return dec.decode(ab);
+          });
+        }
+        if(fname==="read_file"){
+          var pp2=p;
+          return fsGet(pp2).then(function(ab){
+            if(!ab)throw new Error("shim: file not found: "+pp2);
+            return ab;
+          });
+        }
+        if(fname==="write_text_file"||fname==="write_file"){
+          var wp=p,wcontent=fargs.contents;
+          if(isBytes(args)){
+            var meta={};
+            try{
+              var hh=(iopts&&iopts.headers)||{};
+              if(hh.path)meta.path=decodeURIComponent(hh.path);
+              if(hh.options)meta.options=JSON.parse(hh.options);
+            }catch(e){}
+            wp=meta.path||"";
+            wcontent=args;
+          }
+          if(wp===undefined||wp==="")return Promise.resolve(null);
+          maybeDownload(wp,wcontent instanceof ArrayBuffer||isBytes(wcontent)?new Blob([wcontent]):wcontent);
+          return fsSet(wp,wcontent).then(function(){return null;});
+        }
+        if(fname==="exists"){
+          var pe=p;
+          if(statSync(pe))return Promise.resolve(true);
+          return fsGet(pe).then(function(v){return !!v;});
+        }
+        if(fname==="stat"){
+          var ps=p;
+          var so=statSync(ps);
+          if(so)return Promise.resolve(so);
+          return fsGet(ps).then(function(v){
+            if(!v)throw new Error("shim: path not found: "+ps);
+            return{isFile:true,isDirectory:false,size:v.byteLength,readOnly:false,mtimeMs:Date.now()};
+          });
+        }
+        if(fname==="read_dir"){
+          var base=String(p).replace(/\/+$/,"")+"/";
+          var seen={};
+          return idbKeys().then(function(ks){
+            var kids=[];
+            function add(q){var rel=q.slice(base.length);if(rel&&rel.indexOf("/")<0&&!seen[rel]){seen[rel]=1;kids.push({name:rel,path:q,isFile:true,isDirectory:false});}}
+            ks.forEach(add);
+            Object.keys(MEM).forEach(add);
+            window.__WB_PICKED__.forEach(function(f,fp){add(fp);});
+            return {children:kids};
+          });
+        }
+        if(fname==="remove")return fsDel(p).then(function(){return null;});
+        if(fname==="mkdir"||fname==="truncate")return Promise.resolve(null);
+        if(fname==="copy_file"){
+          return fsGet(fargs.oldPath||fargs.path||"").then(function(v){
+            if(v)return fsSet(fargs.newPath||"",v).then(function(){return null;});
+            return null;
+          });
+        }
+        if(fname==="rename"){
+          return fsGet(p).then(function(v){
+            if(v)return fsSet(fargs.newPath||"",v).then(function(){return fsDel(p);}).then(function(){return null;});
+            return null;
+          });
+        }
+        if(fname==="close"){var hc=handleOf(fargs.rid);if(hc)RID.map.delete(fargs.rid);return Promise.resolve(null);}
+        return Promise.resolve(null);
+      }
+      if(cmd.indexOf("plugin:dialog|open")===0)return pickFiles((args||{}).options||{});
+      if(cmd.indexOf("plugin:dialog|save")===0){
+        var sa=(args||{}).options||{};
+        var nm=sa.defaultPath?String(sa.defaultPath).split(/[\\\/]/).pop():"export.txt";
+        return Promise.resolve("/downloads/"+nm);
+      }
+      if(cmd.indexOf("plugin:dialog|message")===0){
+        try{var ma=(args||{}).options||{};alert((ma.title?ma.title+": ":"")+(ma.message||""));}catch(e){}
+        return Promise.resolve(null);
+      }
+      if(cmd.indexOf("plugin:event|")===0)return Promise.resolve(cmd.indexOf("listen")>=0?++seq:null);
+      if(cmd.indexOf("plugin:os|")===0)return Promise.resolve(cmd.indexOf("hostname")>=0?"localhost":"linux");
+      if(cmd.indexOf("plugin:window|get_all_windows")===0)return Promise.resolve([]);
+      return Promise.resolve(undefined);
+    }catch(e){return Promise.reject(e)}
+  },isAdmin:function(){return Promise.resolve(false)},isEnabled:function(){return Promise.resolve(false)}};
+  window.__TAURI_OS_PLUGIN_INTERNALS__={arch:"x86_64",os_type:"Linux",family:"unix",version:"0.0.0",hostname:"localhost",platform:"linux",locale:"en-US"};
+})();
+</script>
+
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Readest Embed Demo</title>
+    <style>
+      html, body { margin: 0; height: 100%; background: #f3f4f6; }
+      #host { height: 100vh; width: 100vw; }
+    </style>
+  </head>
+  <body>
+    <div id="host"></div>
+    <script type="module">
+      const status = document.createElement('div');
+      status.id = 'boot-status';
+      status.style.cssText = 'position:fixed;top:8px;left:8px;z-index:9999;font:12px sans-serif;color:#333;background:#fff;padding:4px 8px;border:1px solid #ccc';
+      status.textContent = 'loading readest-embed.js ...';
+      document.body.appendChild(status);
+      try {
+        const mod = await import('./readest-embed.js');
+        status.textContent = 'module loaded, mounting ...';
+        const unmount = mod.mountReadest({
+          container: document.getElementById('host'),
+          initialPath: '/library',
+        });
+        window.__unmountReadest = unmount;
+        status.textContent = 'mounted ✓';
+        setTimeout(() => status.remove(), 1500);
+      } catch (e) {
+        status.textContent = 'ERROR: ' + (e && e.message ? e.message : e);
+        status.style.color = 'red';
+        console.error(e);
+      }
+    </script>
+  </body>
+</html>
